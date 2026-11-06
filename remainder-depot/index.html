@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>餘數快遞站</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:linear-gradient(#bfe9ff,#fff4d6);min-height:100vh;color:#3b2f2f}
+#app{max-width:980px;margin:0 auto;padding:14px}
+h1{margin:6px 0;font-size:34px}
+.top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#fff;border-radius:16px;padding:8px 14px;box-shadow:0 3px 0 #0002;font-weight:700}
+.top .sp{flex:1}
+.pill{background:#fff3b0;border-radius:20px;padding:3px 12px}
+.card{background:#fff;border-radius:20px;padding:16px;margin-top:12px;box-shadow:0 4px 0 #0002}
+.btn{font:inherit;font-weight:800;font-size:20px;border:0;border-radius:14px;padding:10px 22px;background:#ff8a3d;color:#fff;cursor:pointer;box-shadow:0 4px 0 #b85a14}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b85a14}
+.btn:disabled{background:#bbb;box-shadow:0 4px 0 #888;cursor:not-allowed}
+.btn.g{background:#37b36b;box-shadow:0 4px 0 #1f7d47}
+.btn.b{background:#3d8bff;box-shadow:0 4px 0 #1f5bb8}
+.btn.s{font-size:15px;padding:6px 14px}
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.day{border-radius:18px;padding:12px;background:#fff8e1;border:3px solid #ffd166;cursor:pointer;text-align:center}
+.day.lock{filter:grayscale(1);opacity:.5;cursor:not-allowed}
+.day.boss{border-color:#ff5d5d;background:#ffe9e9}
+.day b{font-size:19px}
+.stars{font-size:22px;letter-spacing:2px}
+.cust{display:flex;gap:14px;align-items:center}
+.face{font-size:76px;line-height:1}
+.bubble{background:#fffbe6;border:3px solid #ffd166;border-radius:22px;padding:12px 18px;font-size:26px;font-weight:800;flex:1;position:relative}
+.bubble.vip{background:#ffeef0;border-color:#ff5d5d}
+.num{color:#e8420c;font-size:32px}
+.tray{min-height:70px;background:#f3ead8;border-radius:14px;padding:8px;margin-top:10px;font-size:26px;line-height:1.25;word-break:break-all}
+.boxes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:44px}
+.box{background:#d9a35b;border-radius:8px;padding:2px 8px;font-weight:800;font-size:17px;color:#fff;animation:pop .3s}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes shake{25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.shake{animation:shake .35s}
+.ans{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:26px;font-weight:800;margin-top:14px}
+input.n{font:inherit;width:90px;font-size:30px;text-align:center;border:3px solid #3d8bff;border-radius:12px;padding:6px}
+input.n:disabled{background:#eee;border-color:#ccc}
+.msg{min-height:34px;font-size:22px;font-weight:800;margin-top:8px}
+.ok{color:#1f9a55}.no{color:#d63b3b}
+.bar{height:14px;background:#eee;border-radius:8px;overflow:hidden;flex:1;min-width:120px}
+.bar i{display:block;height:100%;background:#37b36b;transition:width .3s}
+textarea{width:100%;height:150px;font:inherit;font-size:16px;border-radius:12px;border:2px solid #ccc;padding:8px}
+.stk{display:inline-block;font-size:40px;margin:2px;filter:grayscale(1);opacity:.25}
+.stk.on{filter:none;opacity:1}
+.coin{position:fixed;font-size:34px;pointer-events:none;animation:fly 1s forwards;z-index:9}
+@keyframes fly{to{transform:translateY(-120px) scale(1.6);opacity:0}}
+small{color:#7a6a6a}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const $=s=>document.querySelector(s);
+const ITEMS=['🍓','🥚','🍪','🍩','🍎','🧁','🍬','🐟','🍊','🌽'];
+const ITEMN={'🍓':'草莓','🥚':'雞蛋','🍪':'餅乾','🍩':'甜甜圈','🍎':'蘋果','🧁':'杯子蛋糕','🍬':'糖果','🐟':'小魚','🍊':'橘子','🌽':'玉米'};
+const CUST=['👦','👧','👵','👴','🧑‍🍳','👩‍🚀','🦸','🧙','🐻','🐼','🦊','🐸','🐯','🐰'];
+const STK=['📦','🚚','🛵','✈️','🚀','🚁','🛸','👑'];
+const DAYS=[null,
+{t:'小小包裝員',k:[2,4],n:[5,15],g:1,m:{A:8}},
+{t:'裝箱高手',k:[3,6],n:[10,30],g:1,m:{A:8}},
+{t:'餘數小偵探',k:[2,9],n:[15,45],g:1,m:{A:6,B:2}},
+{t:'抓錯大師',k:[4,9],n:[30,60],m:{A:4,B:2,E:2}},
+{t:'倒推魔法師',k:[4,9],n:[40,70],m:{A:3,C:3,E:2}},
+{t:'補貨專家',k:[5,9],n:[50,80],m:{A:2,B:2,C:2,D:2}},
+{t:'大訂單日',k:[5,9],n:[60,99],m:{A:2,B:1,C:2,D:2,E:1}},
+{t:'超級店長 BOSS',k:[6,9],n:[70,99],m:{A:2,B:2,C:2,D:2},boss:1}
+];
+const TNAME={A:'分裝(商與餘數)',B:'抓錯誤',C:'倒推原本幾個',D:'補貨',E:'最大餘數'};
+let S={name:'軒瑀',coins:0,done:{},sound:1};
+try{const x=JSON.parse(localStorage.getItem('remDepot2'));if(x)S=Object.assign(S,x)}catch(e){}
+function save(){try{localStorage.setItem('remDepot2',JSON.stringify(S))}catch(e){}}
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+let AC;
+function beep(f,d,t){if(!S.sound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=t||'triangle';o.frequency.value=f;g.gain.value=.12;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);o.stop(AC.currentTime+d)}catch(e){}}
+const good=()=>{beep(660,.12);setTimeout(()=>beep(880,.18),110)};
+const bad=()=>beep(180,.3,'sawtooth');
+const pop=()=>beep(440+R(0,200),.08);
+
+/* ---------- question generation ---------- */
+function mk(t,cfg){
+  const item=pick(ITEMS),cust=pick(CUST);
+  let k=R(cfg.k[0],cfg.k[1]),N=R(cfg.n[0],cfg.n[1]);
+  if(t==='D'){let g=0;while(N%k===0&&g++<20)N=R(cfg.n[0],cfg.n[1])}
+  if(t==='A'&&Math.random()<.15)N=Math.max(k,N-N%k);
+  const q=Math.floor(N/k),r=N%k;
+  const o={t,item,cust,N,k,q,r};
+  const nm=ITEMN[item];
+  if(t==='A'){o.text=`我要 <span class="num">${N}</span> 個${item}${nm},每盒裝 <span class="num">${k}</span> 個!`;o.ask='裝滿';o.ans=[q,r]}
+  if(t==='B'){const fq=q-1,fr=r+k;o.fq=fq;o.fr=fr;o.text=`小助手說:${N} ÷ ${k} = ${fq} ……${fr}。<br>這樣不對!請你幫他改成正確的。`;o.ask='正確是';o.ans=[q,r];o.N=N}
+  if(t==='C'){o.text=`每盒裝 <span class="num">${k}</span> 個${item},裝滿 <span class="num">${q}</span> 盒後還剩 <span class="num">${r}</span> 個。原本有幾個?`;o.ans=[k*q+r];o.one='原本有';o.unit='個'}
+  if(t==='D'){o.text=`我有 <span class="num">${N}</span> 個${item},每盒裝 <span class="num">${k}</span> 個。<br>最後一盒還沒裝滿,<b>至少再買幾個</b>才能剛好裝滿?`;o.ans=[k-r];o.one='至少再買';o.unit='個'}
+  if(t==='E'){o.text=`任何數除以 <span class="num">${k}</span>,<b>餘數最大</b>可能是多少?`;o.ans=[k-1];o.one='最大餘數是';o.unit=''}
+  return o;
+}
+function genDay(d){
+  const cfg=DAYS[d];let types=[];
+  for(const t in cfg.m)for(let i=0;i<cfg.m[t];i++)types.push(t);
+  types.sort(()=>Math.random()-.5);
+  const ia=types.indexOf('A');if(ia>0){[types[0],types[ia]]=[types[ia],types[0]]}
+  const qs=[];
+  types.forEach((t,i)=>{let o,g=0;do{o=mk(t,cfg)}while(qs.length&&qs[qs.length-1].N===o.N&&qs[qs.length-1].k===o.k&&g++<10);o.vip=(i===types.length-1);qs.push(o)});
+  return qs;
+}
+
+/* ---------- screens ---------- */
+let G=null;
+function topbar(extra){
+  return `<div class="top"><span>🏪 餘數快遞站</span><span class="pill">👤 ${S.name}</span><span class="pill">🪙 ${S.coins}</span>${extra||''}<span class="sp"></span><button class="btn s b" onclick="S.sound=!S.sound;save();this.textContent=S.sound?'🔊':'🔇'">${S.sound?'🔊':'🔇'}</button></div>`;
+}
+function home(){
+  G=null;
+  const lvl=Math.floor(S.coins/200);
+  const store=['🏠','🏪','🏬','🏢','🏙️'][Math.min(lvl,4)];
+  let h=topbar()+`<div class="card"><h1>${store} 餘數快遞站</h1><div>店長 <b>${S.name}</b>,今天也要幫客人把貨裝好送出去!<br><small>每 200 金幣店面會升級。裝箱後「剩下不夠裝一盒」的就是<b>餘數</b>。</small></div>
+  <div style="margin-top:8px">貼紙冊:${STK.map((s,i)=>`<span class="stk ${S.done[i+1]?'on':''}">${s}</span>`).join('')}</div></div>
+  <div class="card"><div class="days">`;
+  for(let d=1;d<=8;d++){
+    const dn=S.done[d],lock=d>1&&!S.done[d-1];
+    h+=`<div class="day ${lock?'lock':''} ${DAYS[d].boss?'boss':''}" ${lock?'':`onclick="startDay(${d})"`}><b>第${d}天</b><br>${DAYS[d].t}<br><span class="stars">${lock?'🔒':(dn?'⭐'.repeat(dn.stars)+'☆'.repeat(3-dn.stars):'☆☆☆')}</span></div>`;
+  }
+  h+=`</div></div><div class="card"><small>店長名字:</small> <input class="n" style="width:140px;font-size:20px" value="${S.name}" onchange="S.name=this.value||'店長';save();home()"> <button class="btn s" style="background:#999;box-shadow:0 3px 0 #666" onclick="if(this.dataset.c){resetAll()}else{this.dataset.c=1;this.textContent='再按一次確認清除'}">重新開始</button></div>`;
+  $('#app').innerHTML=h;
+}
+function resetAll(){S={name:S.name,coins:0,done:{},sound:S.sound};save();home()}
+
+function startDay(d){
+  G={d,qs:genDay(d),i:0,stats:[],combo:0,coinsGot:0,t0:Date.now(),hints:0};
+  question();
+}
+function question(){
+  const g=G,q=g.qs[g.i],cfg=DAYS[g.d];
+  q.rem=q.N;q.boxes=0;q.tries=0;q.hint=0;q.t0=Date.now();
+  q.guided=cfg.g&&(q.t==='A'||q.t==='B');
+  q.showPack=q.guided;
+  const vip=q.vip&&cfg.boss;
+  let h=topbar(`<span class="pill">第${g.d}天</span><span class="bar"><i style="width:${g.i/g.qs.length*100}%"></i></span><span class="pill">${g.i+1}/${g.qs.length}</span><span class="pill">🔥連擊 ${g.combo}</span>`);
+  h+=`<div class="card"><div class="cust"><div class="face">${q.cust}</div><div class="bubble ${q.vip?'vip':''}">${q.vip?'👑 大客戶(獎勵加倍)!<br>':''}${q.text}</div></div>`;
+  h+=`<div id="pack"></div>`;
+  if(!q.guided&&['A','B','C','D'].includes(q.t))h+=`<button class="btn s b" id="hintb" style="margin-top:10px" onclick="useHint()">🔍 幫我裝箱(提示)</button>`;
+  h+=`<div class="ans" id="ans">`;
+  if(q.ans.length===2)h+=`${q.ask} <input class="n" id="i1" inputmode="numeric" ${q.guided?'disabled':''}> 盒,剩 <input class="n" id="i2" inputmode="numeric" ${q.guided?'disabled':''}> 個`;
+  else h+=`${q.one} <input class="n" id="i1" inputmode="numeric"> ${q.unit}`;
+  h+=` <button class="btn g" id="go" onclick="check()" ${q.guided?'disabled':''}>🚚 出貨!</button></div><div class="msg" id="msg">${q.guided?'先用「裝一盒」把東西裝進盒子,再回答!':''}</div></div>`;
+  $('#app').innerHTML=h;
+  if(q.showPack)renderPack();
+  else if(!q.guided){const i1=$('#i1');i1&&i1.focus()}
+  ['i1','i2'].forEach(id=>{const e=$('#'+id);if(e)e.addEventListener('keydown',ev=>{if(ev.key==='Enter'){if(id==='i1'&&$('#i2')&&!$('#i2').value)$('#i2').focus();else check()}})});
+}
+function trayHTML(n,item){
+  if(n<=0)return '<span style="color:#999;font-size:18px">(沒有剩下的了)</span>';
+  if(n<=48)return item.repeat(n)+` <small>剩 ${n} 個</small>`;
+  return `${item} × ${n}`;
+}
+function renderPack(){
+  const q=G.qs[G.i];
+  const el=$('#pack');if(!el)return;
+  const can=q.rem>=q.k;
+  el.innerHTML=`<div class="tray" id="tray">${trayHTML(q.rem,q.item)}</div><div class="boxes">${Array.from({length:q.boxes},()=>`<span class="box">📦${q.k}</span>`).join('')}</div>
+  <button class="btn s" id="packb" style="margin-top:8px" ${can?'':'disabled'} onclick="packOne()">📦 裝一盒(${q.k} 個)</button> <small>${can?'':'剩下的不夠裝滿一盒囉!'}</small>`;
+}
+function packOne(){
+  const q=G.qs[G.i];if(q.rem<q.k)return;
+  q.rem-=q.k;q.boxes++;pop();renderPack();
+  if(q.rem<q.k&&q.guided){
+    $('#i1').disabled=false;if($('#i2'))$('#i2').disabled=false;$('#go').disabled=false;$('#i1').focus();
+    $('#msg').innerHTML='裝完了!數一數有幾個盒子、還剩幾個。';
+  }
+}
+function useHint(){
+  const q=G.qs[G.i];if(q.showPack)return;
+  q.showPack=true;q.hint++;G.hints++;
+  const b=$('#hintb');if(b)b.remove();
+  renderPack();
+}
+function flash(txt,cls){const m=$('#msg');m.className='msg '+cls;m.innerHTML=txt}
+function check(){
+  const q=G.qs[G.i];
+  const v1=$('#i1').value.trim(),v2=$('#i2')?$('#i2').value.trim():null;
+  if(v1===''||(q.ans.length===2&&v2===''))return flash('每一格都要填喔!','no');
+  const u=q.ans.length===2?[+v1,+v2]:[+v1];
+  q.tries++;
+  const ok=u.every((x,i)=>x===q.ans[i]);
+  if(ok)return correct(q);
+  bad();$('#ans').classList.remove('shake');void $('#ans').offsetWidth;$('#ans').classList.add('shake');
+  if(q.tries===1){
+    let hint='再想想看!';
+    if(q.ans.length===2){
+      if(u[1]>=q.k)hint=`餘數一定要<b>比 ${q.k} 小</b>!剩下 ${u[1]} 個還可以再裝一盒。`;
+      else if(u[0]*q.k+u[1]!==q.N)hint=`驗算:${q.k} × ${u[0]} + ${u[1]} = ${q.k*u[0]+u[1]},要等於 ${q.N} 才對喔。`;
+    }else if(q.t==='C')hint='原本 = 每盒個數 × 盒數 + 剩下的。';
+    else if(q.t==='D')hint=`先算最後一盒剩幾個,再想:還差幾個才會滿 ${q.k} 個?`;
+    else if(q.t==='E')hint='餘數一定比除數小,最大就是「比除數少 1」。';
+    flash('❌ 還不對。'+hint+' 再試一次!','no');
+    $('#i1').select();
+  }else{
+    reveal(q);
+  }
+}
+function reveal(q){
+  q.first=false;q.fail=true;G.combo=0;
+  if(!q.showPack){q.showPack=true;q.hint++}
+  // auto pack animation
+  q.rem=q.N;q.boxes=0;renderPack();
+  $('#packb')&&($('#packb').style.display='none');
+  const iv=setInterval(()=>{
+    if(q.rem>=q.k){q.rem-=q.k;q.boxes++;pop();renderPack();$('#packb').style.display='none'}
+    else{clearInterval(iv);finish(q,false)}
+  },q.N>60?90:220);
+  $('#go').disabled=true;
+  flash('這題我們一起看看答案怎麼來的…','no');
+}
+function eqText(q){
+  return `${q.N} ÷ ${q.k} = ${q.q} ……${q.r}<br><small>驗算:${q.k} × ${q.q} + ${q.r} = ${q.N} ✔</small>`;
+}
+function explain(q){
+  if(q.t==='A'||q.t==='B')return eqText(q);
+  if(q.t==='C')return `${q.k} × ${q.q} + ${q.r} = ${q.N}`;
+  if(q.t==='D')return `${q.N} ÷ ${q.k} = ${q.q} ……${q.r},還差 ${q.k} − ${q.r} = ${q.k-q.r} 個`;
+  return `餘數一定比 ${q.k} 小,最大是 ${q.k} − 1 = ${q.k-1}`;
+}
+function correct(q){
+  const first=q.tries===1;q.first=first;
+  let c=first?10:5;
+  if(first){G.combo++;c+=Math.min(G.combo-1,5)*2}else G.combo=0;
+  if(q.vip&&DAYS[G.d].boss)c*=2;
+  G.coinsGot+=c;S.coins+=c;save();good();
+  const e=document.createElement('div');e.className='coin';e.textContent='🪙+'+c;e.style.left='45%';e.style.top='40%';document.body.appendChild(e);setTimeout(()=>e.remove(),1000);
+  $('#go').disabled=true;
+  finish(q,true,c);
+}
+function finish(q,ok,c){
+  G.stats.push({t:q.t,first:!!q.first,ok,hint:q.hint,ms:Date.now()-q.t0});
+  const last=G.i===G.qs.length-1;
+  $('#msg').className='msg '+(ok?'ok':'no');
+  $('#msg').innerHTML=(ok?`✅ 出貨成功!${c?'+'+c+' 金幣':''}<br>`:'📦 正確答案:')+explain(q)+`<br><button class="btn" style="margin-top:8px" onclick="nextQ()">${last?'今天打烊 ➜':'下一位客人 ➜'}</button>`;
+  $('#i1').disabled=true;if($('#i2'))$('#i2').disabled=true;
+  const nb=$('#msg button');nb&&nb.focus();
+}
+function nextQ(){
+  G.i++;
+  if(G.i>=G.qs.length)return summary();
+  question();
+}
+function summary(){
+  const g=G,n=g.stats.length;
+  const okc=g.stats.filter(s=>s.ok).length,fc=g.stats.filter(s=>s.first).length;
+  const mins=Math.round((Date.now()-g.t0)/60000);
+  const stars=fc>=7?3:fc>=5?2:1;
+  const prev=S.done[g.d];
+  if(!prev||stars>=prev.stars)S.done[g.d]={stars,fc};
+  save();
+  const weak={};g.stats.forEach(s=>{if(!s.first)weak[s.t]=(weak[s.t]||0)+1});
+  const wk=Object.keys(weak).map(t=>`${TNAME[t]} ${weak[t]} 題`).join('、')||'無';
+  const rep=`【餘數快遞站】${S.name} 第${g.d}天「${DAYS[g.d].t}」\n共 ${n} 題,一次就對 ${fc} 題,最後答對 ${okc} 題\n提示使用 ${g.hints} 次,用時約 ${mins} 分鐘\n需要再練:${wk}\n本日獲得 ${g.coinsGot} 金幣,累計 ${S.coins} 金幣`;
+  $('#app').innerHTML=topbar()+`<div class="card" style="text-align:center"><h1>🌙 第${g.d}天打烊!</h1><div class="stars" style="font-size:54px">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+  <div style="font-size:24px;font-weight:800">${STK[g.d-1]} 獲得新貼紙!<br>一次就對 ${fc} / ${n} 題 · 🪙 +${g.coinsGot}</div></div>
+  <div class="card"><b>📋 請複製這段傳給老師(Discord)</b><br><textarea id="rep" readonly>${rep}</textarea>
+  <button class="btn b" onclick="copyRep()">複製成績</button> <span id="cp"></span></div>
+  <div class="card" style="text-align:center">${g.d<8?`<button class="btn g" onclick="startDay(${g.d+1})">繼續第${g.d+1}天 ➜</button> `:'<h2>🎉 你是超級店長!全部通關!</h2>'}<button class="btn" onclick="home()">回店門口</button></div>`;
+  good();
+}
+function copyRep(){
+  const t=$('#rep');t.select();
+  let ok=false;
+  try{navigator.clipboard.writeText(t.value).then(()=>$('#cp').textContent='✅ 已複製',()=>{});ok=true}catch(e){}
+  try{if(document.execCommand('copy')){ok=true;$('#cp').textContent='✅ 已複製'}}catch(e){}
+  if(!ok)$('#cp').textContent='請用滑鼠選取文字後按 Ctrl+C';
+}
+home();
+</script>
+</body>
+</html>
