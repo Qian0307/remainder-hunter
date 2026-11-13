@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>除法打地鼠</title>
+<style>
+*{box-sizing:border-box;-webkit-user-select:none;user-select:none}
+body{margin:0;font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:linear-gradient(#a8e6ff,#d9f7b8 60%,#9be27a);min-height:100vh;color:#3b2f2f}
+#app{max-width:980px;margin:0 auto;padding:12px}
+h1{margin:6px 0;font-size:32px}
+.top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#fff;border-radius:16px;padding:8px 14px;box-shadow:0 3px 0 #0002;font-weight:800}
+.top .sp{flex:1}
+.pill{background:#fff3b0;border-radius:20px;padding:3px 12px}
+.card{background:#fff;border-radius:20px;padding:16px;margin-top:12px;box-shadow:0 4px 0 #0002}
+.btn{font:inherit;font-weight:800;font-size:20px;border:0;border-radius:14px;padding:10px 22px;background:#ff8a3d;color:#fff;cursor:pointer;box-shadow:0 4px 0 #b85a14}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b85a14}
+.btn:disabled{background:#bbb;box-shadow:0 4px 0 #888;cursor:not-allowed}
+.btn.g{background:#37b36b;box-shadow:0 4px 0 #1f7d47}
+.btn.b{background:#3d8bff;box-shadow:0 4px 0 #1f5bb8}
+.btn.s{font-size:15px;padding:6px 14px}
+.lv{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.lvc{border-radius:18px;padding:12px;background:#fff8e1;border:3px solid #ffd166;cursor:pointer;text-align:center}
+.lvc.lock{filter:grayscale(1);opacity:.5;cursor:not-allowed}
+.lvc.boss{border-color:#ff5d5d;background:#ffe9e9}
+.stars{font-size:22px;letter-spacing:2px}
+.qbox{text-align:center;background:#fffbe6;border:4px solid #ffd166;border-radius:20px;padding:10px;margin-top:10px}
+.qbox .q{font-size:46px;font-weight:900;color:#e8420c;letter-spacing:2px}
+.qbox small{font-size:18px;color:#6b5b5b;font-weight:700}
+.prog{height:12px;background:#eee;border-radius:8px;overflow:hidden;flex:1;min-width:100px}
+.prog i{display:block;height:100%;background:#37b36b;transition:width .3s}
+.field{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 10px;margin-top:10px;cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><text y='38' font-size='36'>🔨</text></svg>") 8 8,pointer}
+.cell{position:relative;height:152px;overflow:hidden}
+.mound{position:absolute;left:4%;right:4%;bottom:0;height:42px;background:radial-gradient(#8a5a2b,#5f3b19);border-radius:50% 50% 30% 30%/70% 70% 30% 30%;z-index:3}
+.mw{position:absolute;left:50%;bottom:20px;width:130px;margin-left:-65px;transform:translateY(130%);transition:transform .16s ease-out;z-index:2;text-align:center}
+.mw.up{transform:translateY(0)}
+.sign{display:inline-block;background:#fff;border:4px solid #7a4b1e;border-radius:10px;font-weight:900;font-size:25px;padding:0 8px;min-width:68px;box-shadow:0 3px 0 #0003}
+.face{font-size:58px;line-height:1;margin-top:-2px}
+.mw.gold .face{filter:drop-shadow(0 0 10px gold) saturate(2) hue-rotate(-20deg)}
+.mw.gold .sign{background:#fff3b0;border-color:#e0a800}
+.mw.hit .sign{background:#b6f5c8}
+.mw.bad .sign{background:#ffc6c6}
+.ov{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:20;padding:14px}
+.ovc{background:#fff;border-radius:22px;padding:22px;max-width:560px;width:100%;text-align:center;font-size:24px;font-weight:700}
+.ovc b.e{color:#e8420c}
+.pop{position:fixed;font-size:30px;font-weight:900;color:#e8a100;pointer-events:none;animation:fly .9s forwards;z-index:15;text-shadow:0 2px 0 #fff}
+@keyframes fly{to{transform:translateY(-80px) scale(1.5);opacity:0}}
+textarea{width:100%;height:130px;font:inherit;font-size:16px;border-radius:12px;border:2px solid #ccc;padding:8px;-webkit-user-select:text;user-select:text}
+.stk{display:inline-block;font-size:38px;margin:2px;filter:grayscale(1);opacity:.25}
+.stk.on{filter:none;opacity:1}
+input.t{font:inherit;font-size:20px;width:140px;border:2px solid #aaa;border-radius:10px;padding:4px 8px;-webkit-user-select:text;user-select:text}
+small{color:#7a6a6a}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const $=s=>document.querySelector(s);
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const FACES=['🐹','🐭','🐰','🐻','🐼','🦫'];
+const STK=['🔨','🥕','⭐','🏅','🎯','🧲','🚀','🍀','🏆','👑'];
+const LV=[null,
+{t:'地鼠新兵',d:'÷2、÷3',mode:'Q',ks:[2,3],q:[1,6],n:12,up:3400,gap:1000,max:2},
+{t:'二到五的除法',d:'÷2~÷5',mode:'Q',ks:[2,3,4,5],q:[1,9],n:14,up:3100,gap:950,max:3},
+{t:'找朋友大作戰',d:'一次打出所有答案相同的算式',mode:'M',ks:[2,3,4,5],q:[2,9],n:6,up:3300,gap:900,max:3},
+{t:'六到九的除法',d:'÷6~÷9',mode:'Q',ks:[6,7,8,9],q:[1,9],n:14,up:3100,gap:900,max:3},
+{t:'全部混在一起',d:'÷2~÷9',mode:'Q',ks:[2,3,4,5,6,7,8,9],q:[1,9],n:16,up:2800,gap:850,max:3},
+{t:'找朋友進階',d:'答案相同的算式 ÷2~÷9',mode:'M',ks:[2,3,4,5,6,7,8,9],q:[2,9],n:6,up:3000,gap:800,max:4},
+{t:'兩位數的除法',d:'例如 48 ÷ 4',mode:'Q',ks:[2,3,4,5],q:[10,19],n:12,up:3500,gap:900,max:3},
+{t:'有餘數的地鼠',d:'答案寫成「商…餘數」',mode:'Q',rem:1,ks:[2,3,4,5],q:[1,9],n:12,up:3700,gap:950,max:3},
+{t:'餘數大挑戰',d:'÷3~÷9 有餘數',mode:'Q',rem:1,ks:[3,4,5,6,7,8,9],q:[2,9],n:14,up:3500,gap:900,max:3},
+{t:'地鼠王 BOSS',d:'全部綜合・金色地鼠加倍',mode:'X',ks:[2,3,4,5,6,7,8,9],q:[2,9],n:16,up:2900,gap:800,max:4,boss:1}
+];
+let S={name:'軒瑀',coins:0,done:{},sound:1};
+try{const x=JSON.parse(localStorage.getItem('whackDiv1'));if(x)S=Object.assign(S,x)}catch(e){}
+const save=()=>{try{localStorage.setItem('whackDiv1',JSON.stringify(S))}catch(e){}};
+let AC;
+function beep(f,d,t){if(!S.sound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=t||'triangle';o.frequency.value=f;g.gain.value=.12;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);o.stop(AC.currentTime+d)}catch(e){}}
+const sGood=()=>{beep(660,.1);setTimeout(()=>beep(990,.16),90)};
+const sBad=()=>beep(150,.35,'sawtooth');
+const sPop=()=>beep(300+R(0,80),.05);
+
+/* ---------- question generation ---------- */
+function genQ(cfg){
+  let kind=cfg.mode;
+  if(kind==='X')kind=pick(['Q','Q','Qr','M']);
+  const rem=cfg.rem||kind==='Qr';
+  if(kind==='M'||cfg.mode==='M'){
+    const T=R(cfg.q[0],Math.min(cfg.q[1],9)),ks=cfg.mode==='X'?[2,3,4,5,6,7,8,9]:cfg.ks;
+    return {kind:'M',T,ks,qr:cfg.q,need:3,key:'找'+T};
+  }
+  const ks=(cfg.mode==='X'&&rem)?[3,4,5,6,7,8,9]:cfg.ks;
+  const k=pick(ks);
+  let q=R(cfg.q[0],cfg.q[1]);
+  let r=rem?R(0,k-1):0;
+  const N=k*q+r;
+  let ans,pool;
+  if(rem){
+    ans=`${q}…${r}`;
+    const c=[[q,r+1],[q,r-1],[q+1,r],[q-1,r],[q,r+k],[r,q],[q+1,r+1]];
+    pool=[...new Set(c.filter(([a,b])=>a>=0&&b>=0&&!(a===q&&b===r)).map(([a,b])=>`${a}…${b}`))];
+  }else{
+    ans=String(q);
+    const s=new Set([q+1,q-1,q+2,q-2,q+3,k,k+q,N,q*2]);
+    if(q>=10){s.add(+String(q).split('').reverse().join(''));s.add(q+10);s.add(q-10)}
+    pool=[...s].filter(x=>x>0&&x!==q&&x<=200).map(String);
+  }
+  return {kind:'Q',N,k,q,r,rem,ans,pool,key:`${N}÷${k}`};
+}
+function buildQueue(cfg){
+  const qs=[];let g=0;
+  while(qs.length<cfg.n){const o=genQ(cfg);if(qs.length&&qs[qs.length-1].key===o.key&&g++<10)continue;qs.push(o)}
+  return qs;
+}
+
+/* ---------- screens ---------- */
+function topbar(extra){
+  return `<div class="top"><span>🔨 除法打地鼠</span><span class="pill">👤 ${S.name}</span><span class="pill">🪙 ${S.coins}</span>${extra||''}<span class="sp"></span><button class="btn s b" onclick="S.sound=!S.sound;save();this.textContent=S.sound?'🔊':'🔇'">${S.sound?'🔊':'🔇'}</button></div>`;
+}
+function home(){
+  stopAll();L=null;
+  let h=topbar()+`<div class="card"><h1>🔨 除法打地鼠</h1>
+  <div style="font-size:20px;font-weight:700">地鼠會舉著牌子,牌子上寫著答案。<br>👉 <b style="color:#e8420c">只有答案正確的地鼠才可以打!</b> 打錯會被暫停講解喔。</div>
+  <div style="margin-top:8px">貼紙冊:${STK.map((s,i)=>`<span class="stk ${S.done[i+1]?'on':''}">${s}</span>`).join('')}</div></div>
+  <div class="card"><div class="lv">`;
+  for(let i=1;i<LV.length;i++){
+    const c=LV[i],dn=S.done[i],lock=i>1&&!S.done[i-1];
+    h+=`<div class="lvc ${lock?'lock':''} ${c.boss?'boss':''}" ${lock?'':`onclick="intro(${i})"`}><b style="font-size:19px">第${i}關</b><br>${c.t}<br><small>${c.d}</small><br><span class="stars">${lock?'🔒':(dn?'⭐'.repeat(dn.stars)+'☆'.repeat(3-dn.stars):'☆☆☆')}</span></div>`;
+  }
+  h+=`</div></div><div class="card"><small>店長名字:</small> <input class="t" value="${S.name}" onchange="S.name=this.value||'小朋友';save();home()"> <button class="btn s" style="background:#999;box-shadow:0 3px 0 #666" onclick="if(this.dataset.c){S={name:S.name,coins:0,done:{},sound:S.sound};save();home()}else{this.dataset.c=1;this.textContent='再按一次確認清除'}">重新開始</button></div>`;
+  $('#app').innerHTML=h;
+}
+function overlay(html){const o=document.createElement('div');o.className='ov';o.id='ov';o.innerHTML=`<div class="ovc">${html}</div>`;document.body.appendChild(o)}
+function closeOv(){const o=$('#ov');o&&o.remove()}
+
+function intro(i){
+  const c=LV[i];
+  let rule;
+  if(c.mode==='M')rule=`上面會寫一個數字,例如 <b class="e">答案是 6</b>。<br>地鼠頭上是算式,<b>只打算出來等於它的算式</b>,打到 3 隻就過關!`;
+  else if(c.mode==='X')rule=`綜合挑戰!有「算式」題、「商…餘數」題,還有<b class="e">金色地鼠</b>(打對加倍)。`;
+  else if(c.rem)rule=`題目是 <b class="e">23 ÷ 5</b>,答案要寫成「<b>商…餘數</b>」,<br>例如 4…3。只打<b>完全正確</b>的那隻!`;
+  else rule=`題目是 <b class="e">24 ÷ 4 = ?</b><br>地鼠頭上的牌子寫著答案,<b>只打答案正確的地鼠</b>!`;
+  overlay(`<div style="font-size:30px">第${i}關 ${c.t}</div><div style="margin:12px 0">${rule}</div><div style="font-size:18px;color:#c33">打到錯的會暫停,要看完講解才能繼續。</div><button class="btn g" style="margin-top:14px" onclick="closeOv();startLevel(${i})">開始!</button> <button class="btn s" style="background:#999;box-shadow:0 3px 0 #666" onclick="closeOv()">返回</button>`);
+}
+
+/* ---------- engine ---------- */
+let L=null;
+function later(fn,ms){const id=setTimeout(()=>{L&&L.timers.delete(id);fn()},ms);L&&L.timers.add(id);return id}
+function stopAll(){if(!L)return;L.timers.forEach(clearTimeout);L.timers.clear();L.paused=true}
+function startLevel(i){
+  const cfg=LV[i];
+  L={i,cfg,queue:buildQueue(cfg),qi:0,coins:0,combo:0,wrong:0,right:0,first:0,total:0,facts:{},timers:new Set(),paused:true,since:0,t0:Date.now(),holes:[]};
+  let h=topbar(`<span class="pill">第${i}關</span><span class="prog"><i id="pg" style="width:0"></i></span><span class="pill" id="qn"></span><span class="pill" id="cb"></span>`);
+  h+=`<div class="qbox" id="qb"></div><div class="field" id="field">`;
+  for(let c=0;c<9;c++)h+=`<div class="cell"><div class="mw" id="m${c}"><div class="sign"></div><div class="face"></div></div><div class="mound"></div></div>`;
+  h+=`</div><div style="margin-top:8px;text-align:center"><button class="btn s" style="background:#999;box-shadow:0 3px 0 #666" onclick="if(confirm_())home()">離開</button></div>`;
+  $('#app').innerHTML=h;
+  L.holes=[...Array(9)].map((_,c)=>({el:$('#m'+c),m:null}));
+  L.holes.forEach((hh,c)=>{hh.el.parentElement.addEventListener('pointerdown',e=>{e.preventDefault();whack(c)})});
+  nextQ();
+}
+function confirm_(){return true}
+function head(){
+  const q=L.cur;
+  $('#pg').style.width=(L.qi/L.queue.length*100)+'%';
+  $('#qn').textContent=`第 ${Math.min(L.qi+1,L.queue.length)} / ${L.queue.length} 題`;
+  $('#cb').textContent=`🔥連擊 ${L.combo}`;
+  let t;
+  if(q.kind==='M')t=`<div class="q">答案是 ${q.T}</div><small>打出所有「算出來等於 ${q.T}」的算式 (${q.got}/${q.need})</small>`;
+  else if(q.rem)t=`<div class="q">${q.N} ÷ ${q.k} = ?</div><small>答案寫成「商…餘數」</small>`;
+  else t=`<div class="q">${q.N} ÷ ${q.k} = ?</div><small>只打答案正確的地鼠</small>`;
+  $('#qb').innerHTML=t;
+}
+function nextQ(){
+  clearMoles();
+  if(L.qi>=L.queue.length)return endLevel();
+  L.cur=L.queue[L.qi];L.cur.wrong=0;L.cur.got=0;L.since=0;
+  head();
+  L.paused=false;
+  later(tick,500);
+}
+function clearMoles(){L.holes.forEach(h=>{if(h.m){clearTimeout(h.m.tm);h.m=null;h.el.className='mw';h.el.classList.remove('up')}})}
+function tick(){
+  if(!L||L.paused)return;
+  spawn();
+  later(tick,L.cfg.gap*(0.8+Math.random()*.5));
+}
+function upVals(){return L.holes.filter(h=>h.m).map(h=>h.m.val)}
+function spawn(){
+  const free=L.holes.filter(h=>!h.m),cur=L.cur,cfg=L.cfg;
+  if(!free.length||L.holes.length-free.length>=cfg.max)return;
+  const h=pick(free),ups=upVals();
+  let val,correct=false;
+  if(cur.kind==='Q'){
+    const cUp=L.holes.some(x=>x.m&&x.m.correct);
+    if(!cUp&&(L.since>=2||Math.random()<.4)){correct=true;val=cur.ans;L.since=0}
+    else{
+      const opts=cur.pool.filter(v=>!ups.includes(v));
+      if(!opts.length)return;
+      val=pick(opts);L.since++;
+    }
+  }else{
+    const ok=Math.random()<.5;
+    for(let g=0;g<12;g++){
+      const k=pick(cur.ks);let a;
+      if(ok)a=cur.T;else{do{a=Math.random()<.7?cur.T+pick([-2,-1,1,2]):R(cur.qr[0],Math.min(cur.qr[1],9))}while(a===cur.T||a<1)}
+      const txt=`${a*k}÷${k}`;
+      if(!ups.includes(txt)){val=txt;correct=ok;h.eq={N:a*k,k,a};break}
+    }
+    if(!val)return;
+  }
+  const gold=cfg.boss&&correct&&cur.kind==='Q';
+  h.m={val,correct,gold,eq:h.eq,tm:0,dead:false};
+  h.el.querySelector('.sign').textContent=val;
+  h.el.querySelector('.face').textContent=pick(FACES);
+  h.el.className='mw'+(gold?' gold':'');
+  void h.el.offsetWidth;h.el.classList.add('up');
+  h.m.tm=setTimeout(()=>{if(h.m&&!h.m.dead){h.el.classList.remove('up');const mm=h.m;setTimeout(()=>{if(h.m===mm)h.m=null},200)}},cfg.up*(0.85+Math.random()*.3));
+}
+function burst(el,txt,col){
+  const r=el.getBoundingClientRect(),d=document.createElement('div');
+  d.className='pop';d.textContent=txt;if(col)d.style.color=col;
+  d.style.left=(r.left+r.width/2-30)+'px';d.style.top=(r.top)+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),900);
+}
+function whack(c){
+  if(!L||L.paused)return;
+  const h=L.holes[c];if(!h.m||h.m.dead)return;
+  const m=h.m,cur=L.cur;
+  m.dead=true;clearTimeout(m.tm);
+  if(m.correct){
+    h.el.classList.add('hit');h.el.querySelector('.face').textContent='😵';
+    L.right++;
+    let g=10+Math.min(L.combo,5)*2;if(cur.wrong>0)g=5;if(m.gold)g*=2;
+    L.combo++;L.coins+=g;S.coins+=g;save();sGood();burst(h.el,'+'+g);
+    setTimeout(()=>{h.el.classList.remove('up');setTimeout(()=>{if(h.m===m)h.m=null},200)},350);
+    if(cur.kind==='M'){cur.got++;head();if(cur.got>=cur.need)return qDone()}
+    else return qDone();
+    $('#cb').textContent=`🔥連擊 ${L.combo}`;
+  }else{
+    h.el.classList.add('bad');h.el.querySelector('.face').textContent='😜';
+    L.wrong++;cur.wrong++;L.combo=0;sBad();
+    const key=cur.kind==='M'?m.val:cur.key;
+    L.facts[key]=(L.facts[key]||0)+1;
+    stopAll();
+    setTimeout(()=>explain(m),450);
+  }
+}
+function qDone(){
+  const cur=L.cur;L.paused=true;L.timers.forEach(clearTimeout);L.timers.clear();
+  L.total++;if(cur.wrong===0)L.first++;
+  if(cur.wrong>0&&!cur.retry&&cur.kind==='Q'){L.queue.splice(Math.min(L.qi+4,L.queue.length),0,Object.assign({},cur,{retry:true,wrong:0}))}
+  L.qi++;
+  later(nextQ,700);
+}
+function explain(m){
+  const cur=L.cur;let body;
+  if(cur.kind==='M'){
+    const e=m.eq;
+    body=`你打到 <b class="e">${e.N} ÷ ${e.k} = ${e.a}</b><br>因為 ${e.k} × ${e.a} = ${e.N}。<br>但我們要找的是答案 <b class="e">${cur.T}</b> 的算式喔!`;
+  }else if(cur.rem){
+    const [a,b]=m.val.split('…').map(Number);
+    let why=`${cur.k} × ${a} + ${b} = ${cur.k*a+b},不是 ${cur.N}。`;
+    if(b>=cur.k)why=`餘數 ${b} 比 ${cur.k} 還大,還可以再裝一組,所以不對。`;
+    body=`你打到 <b class="e">${m.val}</b><br>${why}<br>正確是 <b class="e">${cur.ans}</b>:${cur.k} × ${cur.q} + ${cur.r} = ${cur.N}`;
+  }else{
+    const v=+m.val;
+    body=`你打到 <b class="e">${m.val}</b><br>${cur.k} × ${v} = ${cur.k*v},不是 ${cur.N}。<br>正確答案是 <b class="e">${cur.q}</b>:${cur.k} × ${cur.q} = ${cur.N}`;
+  }
+  overlay(`<div style="font-size:30px">😜 這隻是陷阱地鼠!</div><div style="margin:12px 0;line-height:1.6">${body}</div><button class="btn g" id="cont" disabled>看完了(3)</button>`);
+  let n=3;const b=$('#cont');
+  const iv=setInterval(()=>{n--;if(n>0)b.textContent=`看完了(${n})`;else{clearInterval(iv);b.disabled=false;b.textContent='繼續打!'}},1000);
+  b.onclick=()=>{closeOv();clearMoles();L.paused=false;head();later(tick,500)};
+}
+function endLevel(){
+  const cfg=L.cfg,i=L.i,n=L.total;
+  const stars=L.wrong<=1?3:L.wrong<=4?2:1;
+  const prev=S.done[i];if(!prev||stars>=prev.stars)S.done[i]={stars};
+  save();
+  const mins=Math.max(1,Math.round((Date.now()-L.t0)/60000));
+  const wf=Object.entries(L.facts).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>`${k}(${v}次)`).join('、')||'無';
+  const rep=`【除法打地鼠】${S.name} 第${i}關「${cfg.t}」\n共 ${n} 題,一次就對 ${L.first} 題,打錯陷阱 ${L.wrong} 次\n最常打錯:${wf}\n用時約 ${mins} 分鐘,本關獲得 ${L.coins} 金幣,累計 ${S.coins} 金幣`;
+  const hasNext=i<LV.length-1;
+  $('#app').innerHTML=topbar()+`<div class="card" style="text-align:center"><h1>🎉 第${i}關完成!</h1><div class="stars" style="font-size:54px">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+  <div style="font-size:24px;font-weight:800">${STK[i-1]} 獲得新貼紙!<br>一次就對 ${L.first} / ${n} 題 · 🪙 +${L.coins}</div></div>
+  <div class="card"><b>📋 請複製這段傳給老師(Discord)</b><br><textarea id="rep" readonly>${rep}</textarea>
+  <button class="btn b" onclick="copyRep()">複製成績</button> <span id="cp"></span></div>
+  <div class="card" style="text-align:center">${hasNext?`<button class="btn g" onclick="intro(${i+1})">下一關 ➜</button> `:'<h2>🏆 你是地鼠王!全部通關!</h2>'}<button class="btn" onclick="home()">回關卡地圖</button></div>`;
+  sGood();L.paused=true;
+}
+function copyRep(){
+  const t=$('#rep');t.select();let ok=false;
+  try{navigator.clipboard.writeText(t.value).then(()=>$('#cp').textContent='✅ 已複製',()=>{});ok=true}catch(e){}
+  try{if(document.execCommand('copy')){ok=true;$('#cp').textContent='✅ 已複製'}}catch(e){}
+  if(!ok)$('#cp').textContent='請選取文字後按 Ctrl+C';
+}
+home();
+</script>
+</body>
+</html>
