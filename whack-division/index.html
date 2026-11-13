@@ -109,12 +109,41 @@ body{overflow-x:hidden}
 @keyframes cf{to{transform:translateY(110vh) rotate(720deg)}}
 .st{display:inline-block;animation:stin .5s both cubic-bezier(.3,1.8,.5,1)}
 @keyframes stin{from{transform:scale(0) rotate(-90deg)}}
+
+.shop{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.item{text-align:center;background:#fff8e1;border:3px solid #ffd166;border-radius:16px;padding:8px 12px;min-width:118px}
+.item.use{border-color:#37b36b;background:#e7ffe9}
+.hv{height:72px;display:flex;justify-content:center}.hv svg{height:72px;width:auto}
+#hammer.flame::after{content:'🔥';position:absolute;left:8px;top:-28px;font-size:30px;animation:fl2 .3s infinite alternate}
+@keyframes fl2{to{transform:scale(1.2) translateY(-4px)}}
+.hp{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:6px 14px;margin-top:8px;box-shadow:0 3px 0 #0002;font-weight:800}
+.hpb{height:16px;background:#ddd;border-radius:10px;overflow:hidden;margin-top:3px;border:2px solid #7a2b2b}
+.hpb i{display:block;height:100%;width:100%;background:linear-gradient(#ff6b6b,#d63b3b);transition:width .4s}
+.mole.king{width:76px;height:57px;margin:0}
+.king.hurt{animation:hurt .45s}
+.king.hurt .eyes,.king.taunt .eyes,.king.defeat .eyes{display:none}
+.king.hurt .xeyes,.king.defeat .xeyes{display:block}
+.king.taunt{animation:laugh .5s 2}
+.king.taunt .smug{display:block}.king.taunt .mouth,.king.taunt .teeth{display:none}
+.king.defeat{animation:defeat 1.3s forwards}
+@keyframes hurt{20%{transform:translateX(-8px) rotate(-8deg);filter:brightness(2)}60%{transform:translateX(8px) rotate(8deg)}}
+@keyframes defeat{30%{transform:scale(1.5) rotate(20deg)}100%{transform:translateY(140px) rotate(200deg) scale(.3);opacity:0}}
+.banner{position:fixed;top:300px;left:50%;transform:translateX(-50%);z-index:25;pointer-events:none;font-size:34px;font-weight:900;color:#fff;background:linear-gradient(90deg,#ff5a1f,#ffb100);padding:8px 26px;border-radius:30px;border:4px solid #fff;box-shadow:0 6px 0 #0003;white-space:nowrap;animation:bn 1.9s forwards}
+@keyframes bn{0%{transform:translateX(-50%) scale(.2) rotate(-6deg);opacity:0}15%{transform:translateX(-50%) scale(1.15);opacity:1}25%{transform:translateX(-50%) scale(1)}85%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-30px)}}
+.fever .sky{animation:rb 2.5s linear infinite}
+@keyframes rb{to{filter:hue-rotate(360deg)}}
+.fever .qbox{border-color:#ff5a1f;box-shadow:0 0 22px #ff9a5a}
+.mw.rb svg{animation:rbw 1.2s linear infinite}
+@keyframes rbw{to{filter:hue-rotate(360deg) drop-shadow(0 0 8px #fff)}}
+.mw.rb .sign::before{content:'💎 '}
+.say{position:fixed;transform:translate(-50%,-100%);background:#fff;border:3px solid #333;border-radius:14px;padding:4px 10px;font-weight:900;font-size:18px;z-index:18;pointer-events:none;white-space:nowrap;animation:sayin 1s forwards}
+@keyframes sayin{0%{transform:translate(-50%,-70%) scale(.3)}15%{transform:translate(-50%,-100%) scale(1.1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-120%)}}
 </style>
 </head>
 <body>
 <div class="sky"><div class="sun">☀️</div><i class="cloud c1">☁️</i><i class="cloud c2">☁️</i><i class="cloud c3">☁️</i><div class="hill"></div><div class="hill h2"></div></div>
 <div id="app"></div>
-<div id="hammer"><div class="hm"><svg width="50" height="90" viewBox="0 0 50 90"><rect x="21" y="26" width="9" height="62" rx="4" fill="#a8672d" stroke="#6b3f17" stroke-width="2"/><rect x="4" y="3" width="42" height="28" rx="8" fill="#e04b43" stroke="#8f1f1a" stroke-width="2.5"/><rect x="8" y="7" width="34" height="8" rx="4" fill="#ff9c93"/></svg></div></div>
+<div id="hammer"><div class="hm"></div></div>
 <script>
 const $=s=>document.querySelector(s);
 const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
@@ -126,19 +155,22 @@ const LV=[null,
 {t:'二到五的除法',d:'÷2~÷5',mode:'Q',ks:[2,3,4,5],q:[1,9],n:14,up:3100,gap:950,max:3},
 {t:'找朋友大作戰',d:'一次打出所有答案相同的算式',mode:'M',ks:[2,3,4,5],q:[2,9],n:6,up:3300,gap:900,max:3},
 {t:'六到九的除法',d:'÷6~÷9',mode:'Q',ks:[6,7,8,9],q:[1,9],n:14,up:3100,gap:900,max:3},
-{t:'全部混在一起',d:'÷2~÷9',mode:'Q',ks:[2,3,4,5,6,7,8,9],q:[1,9],n:16,up:2800,gap:850,max:3},
+{t:'全部混在一起',d:'÷2~÷9',mode:'Q',ks:[2,3,4,5,6,7,8,9],q:[1,9],n:16,up:2800,gap:850,max:3,king:1},
 {t:'找朋友進階',d:'答案相同的算式 ÷2~÷9',mode:'M',ks:[2,3,4,5,6,7,8,9],q:[2,9],n:6,up:3000,gap:800,max:4},
 {t:'兩位數的除法',d:'例如 48 ÷ 4',mode:'Q',ks:[2,3,4,5],q:[10,19],n:12,up:3500,gap:900,max:3},
 {t:'有餘數的地鼠',d:'答案寫成「商…餘數」',mode:'Q',rem:1,ks:[2,3,4,5],q:[1,9],n:12,up:3700,gap:950,max:3},
 {t:'餘數大挑戰',d:'÷3~÷9 有餘數',mode:'Q',rem:1,ks:[3,4,5,6,7,8,9],q:[2,9],n:14,up:3500,gap:900,max:3},
-{t:'地鼠王 BOSS',d:'全部綜合・金色地鼠加倍',mode:'X',ks:[2,3,4,5,6,7,8,9],q:[2,9],n:16,up:2900,gap:800,max:4,boss:1}
+{t:'地鼠王 BOSS',d:'全部綜合・金色地鼠加倍',mode:'X',ks:[2,3,4,5,6,7,8,9],q:[2,9],n:16,up:2900,gap:800,max:4,boss:1,king:1}
 ];
 let S={name:'軒瑀',coins:0,done:{},sound:1};
 try{const x=JSON.parse(localStorage.getItem('whackDiv1'));if(x)S=Object.assign(S,x)}catch(e){}
 const save=()=>{try{localStorage.setItem('whackDiv1',JSON.stringify(S))}catch(e){}};
+if(!S.owned)S.owned=['red'];if(!S.hammer)S.hammer='red';if(S.total==null)S.total=S.coins;
 let AC;
 function beep(f,d,t){if(!S.sound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=t||'triangle';o.frequency.value=f;g.gain.value=.12;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);o.stop(AC.currentTime+d)}catch(e){}}
-const sGood=()=>{beep(660,.1);setTimeout(()=>beep(990,.16),90)};
+const sGood=(n=0)=>{const b=660+Math.min(n,8)*55;beep(b,.1);setTimeout(()=>beep(b*1.5,.16),90)};
+const bonk=()=>{beep(140,.12,'square');beep(70,.18,'sine')};
+const fanfare=()=>[523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,.2),i*110));
 const sBad=()=>beep(150,.35,'sawtooth');
 const sPop=()=>beep(300+R(0,80),.05);
 
@@ -161,7 +193,7 @@ const MOLE=`<svg viewBox="0 0 100 84" xmlns="http://www.w3.org/2000/svg">
 function dirt(h){const cell=h.el.parentElement;for(let i=0;i<6;i++){const d=document.createElement('i');d.className='dirt';d.style.setProperty('--dx',R(-60,60)+'px');d.style.setProperty('--dy',-R(25,60)+'px');d.style.left=(40+R(0,20))+'%';cell.appendChild(d);setTimeout(()=>d.remove(),600)}}
 function sparkle(el){
   const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height*0.4;
-  for(let i=0;i<9;i++){const s=document.createElement('div');s.className='spk';s.textContent=pick(['⭐','✨','💥']);s.style.left=cx+'px';s.style.top=cy+'px';const a=Math.PI*2*i/9,d=R(50,90);s.style.setProperty('--dx',Math.cos(a)*d+'px');s.style.setProperty('--dy',Math.sin(a)*d+'px');document.body.appendChild(s);setTimeout(()=>s.remove(),700)}
+  for(let i=0;i<9;i++){const s=document.createElement('div');s.className='spk';s.textContent=pick(HAMMERS[S.hammer].fx);s.style.left=cx+'px';s.style.top=cy+'px';const a=Math.PI*2*i/9,d=R(50,90);s.style.setProperty('--dx',Math.cos(a)*d+'px');s.style.setProperty('--dy',Math.sin(a)*d+'px');document.body.appendChild(s);setTimeout(()=>s.remove(),700)}
   const p=document.createElement('div');p.className='pow';p.textContent=pick(['POW!','BONK!','好耶!','讚!']);p.style.left=cx+'px';p.style.top=cy+'px';document.body.appendChild(p);setTimeout(()=>p.remove(),750);
 }
 function shake(){const f=$('#field');if(f){f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake')}const fl=document.createElement('div');fl.id='flash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),420)}
@@ -177,6 +209,26 @@ document.addEventListener('pointerdown',e=>{
   h.classList.remove('swing');void h.offsetWidth;h.classList.add('swing');
   const r=document.createElement('div');r.className='ring';r.style.left=e.clientX+'px';r.style.top=e.clientY+'px';document.body.appendChild(r);setTimeout(()=>r.remove(),420);
 });
+
+
+const HAMMERS={
+ red:{n:'紅色大鎚',p:0,head:'#e04b43',hi:'#ff9c93',edge:'#8f1f1a',fx:['⭐','✨','💥']},
+ gold:{n:'黃金鎚',p:150,head:'#f2b705',hi:'#fff3a0',edge:'#9a6f00',fx:['⭐','✨','🪙']},
+ ice:{n:'冰凍鎚',p:300,head:'#5ec8f2',hi:'#d8f4ff',edge:'#1c7da6',fx:['❄️','✨','💎']},
+ rainbow:{n:'彩虹鎚',p:500,rb:1,head:'#fff',hi:'#fff',edge:'#6b3fa0',fx:['🌈','✨','🎉']},
+ fire:{n:'火焰鎚',p:800,head:'#ff6a1f',hi:'#ffd166',edge:'#a02c00',fx:['🔥','✨','💥']}
+};
+function hammerSVG(id){const H=HAMMERS[id];const f=H.rb?`url(#rbg)`:H.head;
+ return `<svg width="50" height="90" viewBox="0 0 50 90"><defs><linearGradient id="rbg" x1="0" x2="1"><stop offset="0" stop-color="#ff5d5d"/><stop offset=".25" stop-color="#ffd166"/><stop offset=".5" stop-color="#37b36b"/><stop offset=".75" stop-color="#3d8bff"/><stop offset="1" stop-color="#b66bff"/></linearGradient></defs><rect x="21" y="26" width="9" height="62" rx="4" fill="#a8672d" stroke="#6b3f17" stroke-width="2"/><rect x="4" y="3" width="42" height="28" rx="8" fill="${f}" stroke="${H.edge}" stroke-width="2.5"/><rect x="8" y="7" width="34" height="8" rx="4" fill="${H.hi}" opacity=".7"/></svg>`}
+function setHammer(){const h=HM();if(!h)return;h.querySelector('.hm').innerHTML=hammerSVG(S.hammer);h.classList.toggle('flame',S.hammer==='fire')}
+function buy(id){const H=HAMMERS[id];if(S.coins<H.p||S.owned.includes(id))return;S.coins-=H.p;S.owned.push(id);S.hammer=id;save();setHammer();fanfare();home()}
+function equip(id){if(!S.owned.includes(id))return;S.hammer=id;save();setHammer();sPop();home()}
+const KING=MOLE.replace('</svg>','<path d="M28 20l6-16 10 9 6-13 6 13 10-9 6 16z" fill="#ffd23f" stroke="#c99200" stroke-width="2"/></svg>');
+function kingFx(cls){const k=$('#king');if(!k)return;k.classList.remove('hurt','taunt','defeat');void k.offsetWidth;k.classList.add(cls)}
+function say(el,txt){const r=el.getBoundingClientRect();const d=document.createElement('div');d.className='say';d.textContent=txt;d.style.left=(r.left+r.width/2)+'px';d.style.top=(r.top)+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1000)}
+function startFever(){L.fever=4;document.body.classList.add('fever');fanfare();const b=document.createElement('div');b.className='banner';b.textContent='🔥 FEVER 模式!接下來 3 題金幣 ×2';document.body.appendChild(b);setTimeout(()=>b.remove(),1900)}
+function endFever(){if(L)L.fever=0;document.body.classList.remove('fever')}
+function cbText(){return `🔥連擊 ${L.combo}`+(L.fever>0?' ⚡FEVER×2':'')}
 
 /* ---------- question generation ---------- */
 function genQ(cfg){
@@ -216,16 +268,17 @@ function topbar(extra){
   return `<div class="top"><span>🔨 除法打地鼠</span><span class="pill">👤 ${S.name}</span><span class="pill">🪙 ${S.coins}</span>${extra||''}<span class="sp"></span><button class="btn s b" onclick="S.sound=!S.sound;save();this.textContent=S.sound?'🔊':'🔇'">${S.sound?'🔊':'🔇'}</button></div>`;
 }
 function home(){
-  stopAll();L=null;hideHammer();
+  stopAll();L=null;hideHammer();document.body.classList.remove('fever');
   let h=topbar()+`<div class="card"><div style="display:flex;align-items:center;gap:14px"><div class="mole mascot">${MOLE}</div><h1>🔨 除法打地鼠</h1></div>
   <div style="font-size:20px;font-weight:700">地鼠會舉著牌子,牌子上寫著答案。<br>👉 <b style="color:#e8420c">只有答案正確的地鼠才可以打!</b> 打錯會被暫停講解喔。</div>
   <div style="margin-top:8px">貼紙冊:${STK.map((s,i)=>`<span class="stk ${S.done[i+1]?'on':''}">${s}</span>`).join('')}</div></div>
+  <div class="card"><b style="font-size:22px">🛒 鎚子商店</b> <small>用金幣買新鎚子,打中會有不同特效!</small><div class="shop">${Object.entries(HAMMERS).map(([id,H])=>{const own=S.owned.includes(id),use=S.hammer===id;return `<div class="item ${use?'use':''}"><div class="hv">${hammerSVG(id)}</div><b>${H.n}</b><br>${own?(use?'<span class="pill">使用中</span>':`<button class="btn s g" onclick="equip('${id}')">使用</button>`):`<button class="btn s" ${S.coins>=H.p?'':'disabled'} onclick="buy('${id}')">🪙${H.p} 購買</button>`}</div>`}).join('')}</div></div>
   <div class="card"><div class="lv">`;
   for(let i=1;i<LV.length;i++){
     const c=LV[i],dn=S.done[i],lock=i>1&&!S.done[i-1];
-    h+=`<div class="lvc ${lock?'lock':''} ${c.boss?'boss':''}" ${lock?'':`onclick="intro(${i})"`}><b style="font-size:19px">第${i}關</b><br>${c.t}<br><small>${c.d}</small><br><span class="stars">${lock?'🔒':(dn?'⭐'.repeat(dn.stars)+'☆'.repeat(3-dn.stars):'☆☆☆')}</span></div>`;
+    h+=`<div class="lvc ${lock?'lock':''} ${c.king?'boss':''}" ${lock?'':`onclick="intro(${i})"`}><b style="font-size:19px">第${i}關</b><br>${c.t}<br><small>${c.d}</small><br>${c.king?'<b>👑 地鼠王</b><br>':''}<span class="stars">${lock?'🔒':(dn?'⭐'.repeat(dn.stars)+'☆'.repeat(3-dn.stars):'☆☆☆')}</span></div>`;
   }
-  h+=`</div></div><div class="card"><small>店長名字:</small> <input class="t" value="${S.name}" onchange="S.name=this.value||'小朋友';save();home()"> <button class="btn s" style="background:#999;box-shadow:0 3px 0 #666" onclick="if(this.dataset.c){S={name:S.name,coins:0,done:{},sound:S.sound};save();home()}else{this.dataset.c=1;this.textContent='再按一次確認清除'}">重新開始</button></div>`;
+  h+=`</div></div><div class="card"><small>店長名字:</small> <input class="t" value="${S.name}" onchange="S.name=this.value||'小朋友';save();home()"> <button class="btn s" style="background:#999;box-shadow:0 3px 0 #666" onclick="if(this.dataset.c){S={name:S.name,coins:0,done:{},sound:S.sound,owned:['red'],hammer:'red',total:0};save();home()}else{this.dataset.c=1;this.textContent='再按一次確認清除'}">重新開始</button></div>`;
   $('#app').innerHTML=h;
 }
 function overlay(html){const o=document.createElement('div');o.className='ov';o.id='ov';o.innerHTML=`<div class="ovc">${html}</div>`;document.body.appendChild(o)}
@@ -238,6 +291,7 @@ function intro(i){
   else if(c.mode==='X')rule=`綜合挑戰!有「算式」題、「商…餘數」題,還有<b class="e">金色地鼠</b>(打對加倍)。`;
   else if(c.rem)rule=`題目是 <b class="e">23 ÷ 5</b>,答案要寫成「<b>商…餘數</b>」,<br>例如 4…3。只打<b>完全正確</b>的那隻!`;
   else rule=`題目是 <b class="e">24 ÷ 4 = ?</b><br>地鼠頭上的牌子寫著答案,<b>只打答案正確的地鼠</b>!`;
+  if(c.king)rule+=`<br>👑 <b>打倒地鼠王!</b>答對一題,他的血量就會減少。`;
   overlay(`<div style="font-size:30px">第${i}關 ${c.t}</div><div style="margin:12px 0">${rule}</div><div style="font-size:18px;color:#c33">打到錯的會暫停,要看完講解才能繼續。</div><button class="btn g" style="margin-top:14px" onclick="closeOv();startLevel(${i})">開始!</button> <button class="btn s" style="background:#999;box-shadow:0 3px 0 #666" onclick="closeOv()">返回</button>`);
 }
 
@@ -247,14 +301,15 @@ function later(fn,ms){const id=setTimeout(()=>{L&&L.timers.delete(id);fn()},ms);
 function stopAll(){if(!L)return;L.timers.forEach(clearTimeout);L.timers.clear();L.paused=true}
 function startLevel(i){
   const cfg=LV[i];
-  L={i,cfg,queue:buildQueue(cfg),qi:0,coins:0,combo:0,wrong:0,right:0,first:0,total:0,facts:{},timers:new Set(),paused:true,since:0,t0:Date.now(),holes:[]};
+  L={i,cfg,queue:buildQueue(cfg),qi:0,coins:0,combo:0,wrong:0,right:0,first:0,total:0,facts:{},timers:new Set(),paused:true,since:0,fever:0,t0:Date.now(),holes:[]};
   let h=topbar(`<span class="pill">第${i}關</span><span class="prog"><i id="pg" style="width:0"></i></span><span class="pill" id="qn"></span><span class="pill" id="cb"></span>`);
-  h+=`<div class="qbox" id="qb"></div><div class="field" id="field">`;
+  h+=`${cfg.king?`<div class="hp"><div class="mole king" id="king">${KING}</div><div style="flex:1">👑 地鼠王 HP<div class="hpb"><i id="hp"></i></div></div></div>`:''}<div class="qbox" id="qb"></div><div class="field" id="field">`;
   for(let c=0;c<9;c++)h+=`<div class="cell"><div class="mw" id="m${c}"><div class="sign"></div><div class="mole">${MOLE}</div></div><div class="mound"></div></div>`;
   h+=`</div><div style="margin-top:8px;text-align:center"><button class="btn s" style="background:#999;box-shadow:0 3px 0 #666" onclick="if(confirm_())home()">離開</button></div>`;
   $('#app').innerHTML=h;
   L.holes=[...Array(9)].map((_,c)=>({el:$('#m'+c),m:null}));
   L.holes.forEach((hh,c)=>{hh.el.parentElement.addEventListener('pointerdown',e=>{e.preventDefault();whack(c)})});
+  setHammer();
   nextQ();
 }
 function confirm_(){return true}
@@ -262,7 +317,8 @@ function head(){
   const q=L.cur;
   $('#pg').style.width=(L.qi/L.queue.length*100)+'%';
   $('#qn').textContent=`第 ${Math.min(L.qi+1,L.queue.length)} / ${L.queue.length} 題`;
-  $('#cb').textContent=`🔥連擊 ${L.combo}`;
+  $('#cb').textContent=cbText();
+  if(L.cfg.king){const hp=$('#hp');if(hp)hp.style.width=((L.queue.length-L.qi)/L.queue.length*100)+'%'}
   let t;
   if(q.kind==='M')t=`<div class="q">答案是 ${q.T}</div><small>打出所有「算出來等於 ${q.T}」的算式 (${q.got}/${q.need})</small>`;
   else if(q.rem)t=`<div class="q">${q.N} ÷ ${q.k} = ?</div><small>答案寫成「商…餘數」</small>`;
@@ -271,7 +327,7 @@ function head(){
 }
 function nextQ(){
   clearMoles();
-  if(L.qi>=L.queue.length)return endLevel();
+  if(L.qi>=L.queue.length){if(L.cfg.king){kingFx('defeat');beep(200,.5,'sawtooth');setTimeout(fanfare,500);L.paused=true;later(endLevel,1700);return}return endLevel()}
   L.cur=L.queue[L.qi];L.cur.wrong=0;L.cur.got=0;L.since=0;
   head();{const qb=$('#qb');qb.classList.remove('bump','qin');void qb.offsetWidth;qb.classList.add('qin')}
   L.paused=false;
@@ -308,10 +364,11 @@ function spawn(){
     if(!val)return;
   }
   const gold=cfg.boss&&correct&&cur.kind==='Q';
-  h.m={val,correct,gold,eq:h.eq,tm:0,dead:false};
+  const rb=!gold&&correct&&Math.random()<.12;
+  h.m={val,correct,gold,rb,eq:h.eq,tm:0,dead:false};
   h.el.querySelector('.sign').textContent=val;
-  h.el.style.setProperty('--c',gold?'#f2b705':pick(COLS));
-  h.el.className='mw'+(gold?' gold':'');
+  h.el.style.setProperty('--c',gold?'#f2b705':rb?'#ff6fa5':pick(COLS));
+  h.el.className='mw'+(gold?' gold':'')+(rb?' rb':'');
   void h.el.offsetWidth;h.el.classList.add('up');dirt(h);
   h.m.tm=setTimeout(()=>{if(h.m&&!h.m.dead){h.el.classList.remove('up');const mm=h.m;setTimeout(()=>{if(h.m===mm)h.m=null},200)}},cfg.up*(0.85+Math.random()*.3));
 }
@@ -328,14 +385,14 @@ function whack(c){
   if(m.correct){
     h.el.classList.add('hit');sparkle(h.el);
     L.right++;
-    let g=10+Math.min(L.combo,5)*2;if(cur.wrong>0)g=5;if(m.gold)g*=2;
-    L.combo++;L.coins+=g;S.coins+=g;save();sGood();burst(h.el,'+'+g);if(L.combo>=3&&L.combo%3===0)burst($('#qb'),'🔥連擊 x'+L.combo,'#ff5a1f');bump();
+    let g=10+Math.min(L.combo,5)*2;if(cur.wrong>0)g=5;if(m.gold)g*=2;if(m.rb)g+=30;if(L.fever>0)g*=2;
+    L.combo++;L.coins+=g;S.coins+=g;S.total=(S.total||0)+g;save();sGood(L.combo);bonk();kingFx('hurt');burst(h.el,(m.rb?'💎+':'+')+g);if(L.combo%5===0&&!(L.fever>0))startFever();if(L.combo>=3&&L.combo%3===0)burst($('#qb'),'🔥連擊 x'+L.combo,'#ff5a1f');bump();
     setTimeout(()=>{h.el.classList.remove('up');setTimeout(()=>{if(h.m===m)h.m=null},200)},350);
     if(cur.kind==='M'){cur.got++;head();if(cur.got>=cur.need)return qDone()}
     else return qDone();
-    $('#cb').textContent=`🔥連擊 ${L.combo}`;
+    $('#cb').textContent=cbText();
   }else{
-    h.el.classList.add('bad');shake();
+    h.el.classList.add('bad');shake();kingFx('taunt');say(h.el,pick(['嘿嘿~被騙了!','我是假的!哈哈','答案不是我~','再想想喔!']));if(L.fever>0)endFever();
     L.wrong++;cur.wrong++;L.combo=0;sBad();
     const key=cur.kind==='M'?m.val:cur.key;
     L.facts[key]=(L.facts[key]||0)+1;
@@ -345,7 +402,7 @@ function whack(c){
 }
 function qDone(){
   const cur=L.cur;L.paused=true;L.timers.forEach(clearTimeout);L.timers.clear();
-  L.total++;if(cur.wrong===0)L.first++;
+  L.total++;if(cur.wrong===0)L.first++;if(L.fever>0){L.fever--;if(L.fever<=0)endFever()}
   if(cur.wrong>0&&!cur.retry&&cur.kind==='Q'){L.queue.splice(Math.min(L.qi+4,L.queue.length),0,Object.assign({},cur,{retry:true,wrong:0}))}
   L.qi++;
   later(nextQ,700);
@@ -370,13 +427,13 @@ function explain(m){
   b.onclick=()=>{closeOv();clearMoles();L.paused=false;head();later(tick,500)};
 }
 function endLevel(){
-  const cfg=L.cfg,i=L.i,n=L.total;
+  document.body.classList.remove('fever');const cfg=L.cfg,i=L.i,n=L.total;
   const stars=L.wrong<=1?3:L.wrong<=4?2:1;
   const prev=S.done[i];if(!prev||stars>=prev.stars)S.done[i]={stars};
   save();
   const mins=Math.max(1,Math.round((Date.now()-L.t0)/60000));
   const wf=Object.entries(L.facts).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>`${k}(${v}次)`).join('、')||'無';
-  const rep=`【除法打地鼠】${S.name} 第${i}關「${cfg.t}」\n共 ${n} 題,一次就對 ${L.first} 題,打錯陷阱 ${L.wrong} 次\n最常打錯:${wf}\n用時約 ${mins} 分鐘,本關獲得 ${L.coins} 金幣,累計 ${S.coins} 金幣`;
+  const rep=`【除法打地鼠】${S.name} 第${i}關「${cfg.t}」\n共 ${n} 題,一次就對 ${L.first} 題,打錯陷阱 ${L.wrong} 次\n最常打錯:${wf}\n用時約 ${mins} 分鐘,本關獲得 ${L.coins} 金幣,累計 ${S.total||0} 金幣`;
   const hasNext=i<LV.length-1;
   $('#app').innerHTML=topbar()+`<div class="card" style="text-align:center"><h1>🎉 第${i}關完成!</h1>${starsBig(stars)}
   <div style="font-size:24px;font-weight:800">${STK[i-1]} 獲得新貼紙!<br>一次就對 ${L.first} / ${n} 題 · 🪙 +${L.coins}</div></div>
@@ -391,7 +448,7 @@ function copyRep(){
   try{if(document.execCommand('copy')){ok=true;$('#cp').textContent='✅ 已複製'}}catch(e){}
   if(!ok)$('#cp').textContent='請選取文字後按 Ctrl+C';
 }
-home();
+setHammer();home();
 </script>
 </body>
 </html>
