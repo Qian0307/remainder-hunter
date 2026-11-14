@@ -265,7 +265,7 @@ function buildQueue(cfg){
 
 /* ---------- screens ---------- */
 function topbar(extra){
-  return `<div class="top"><span>🔨 除法打地鼠</span><span class="pill">👤 ${S.name}</span><span class="pill">🪙 ${S.coins}</span>${extra||''}<span class="sp"></span><button class="btn s b" onclick="S.sound=!S.sound;save();this.textContent=S.sound?'🔊':'🔇'">${S.sound?'🔊':'🔇'}</button></div>`;
+  return `<div class="top"><span>🔨 除法打地鼠</span><span class="pill">👤 ${S.name}</span><span class="pill" id="coinp">🪙 ${S.coins}</span>${extra||''}<span class="sp"></span><button class="btn s b" onclick="S.sound=!S.sound;save();this.textContent=S.sound?'🔊':'🔇'">${S.sound?'🔊':'🔇'}</button></div>`;
 }
 function home(){
   stopAll();L=null;hideHammer();document.body.classList.remove('fever');
@@ -386,7 +386,7 @@ function whack(c){
     h.el.classList.add('hit');sparkle(h.el);
     L.right++;
     let g=10+Math.min(L.combo,5)*2;if(cur.wrong>0)g=5;if(m.gold)g*=2;if(m.rb)g+=30;if(L.fever>0)g*=2;
-    L.combo++;L.coins+=g;S.coins+=g;S.total=(S.total||0)+g;save();sGood(L.combo);bonk();kingFx('hurt');burst(h.el,(m.rb?'💎+':'+')+g);if(L.combo%5===0&&!(L.fever>0))startFever();if(L.combo>=3&&L.combo%3===0)burst($('#qb'),'🔥連擊 x'+L.combo,'#ff5a1f');bump();
+    L.combo++;L.coins+=g;S.coins+=g;S.total=(S.total||0)+g;save();{const cp=$('#coinp');if(cp)cp.textContent='🪙 '+S.coins}sGood(L.combo);bonk();kingFx('hurt');burst(h.el,(m.rb?'💎+':'+')+g);if(L.combo%5===0&&!(L.fever>0))startFever();if(L.combo>=3&&L.combo%3===0)burst($('#qb'),'🔥連擊 x'+L.combo,'#ff5a1f');bump();
     setTimeout(()=>{h.el.classList.remove('up');setTimeout(()=>{if(h.m===m)h.m=null},200)},350);
     if(cur.kind==='M'){cur.got++;head();if(cur.got>=cur.need)return qDone()}
     else return qDone();
