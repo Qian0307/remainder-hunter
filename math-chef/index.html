@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>算式小餐館</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;background:linear-gradient(180deg,#fff4dc,#ffe3c2);color:#4a2f1b;min-height:100vh}
+.wrap{max-width:780px;margin:0 auto;padding:16px}
+.hidden{display:none!important}
+h1{font-size:34px;margin:8px 0;text-align:center}
+.sub{color:#8a5a33;text-align:center;margin-bottom:12px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#fff;border-radius:16px;padding:10px 14px;box-shadow:0 2px 0 #e8c9a0;margin-bottom:12px;flex-wrap:wrap}
+.coin{font-weight:800;font-size:20px}
+.card{background:#fff;border-radius:20px;padding:18px;box-shadow:0 3px 0 #e8c9a0;margin-bottom:14px}
+.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.day{background:#fff;border:3px solid #f0c48a;border-radius:20px;padding:14px;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.day:hover{border-color:#ff9a3c;transform:translateY(-2px)}
+.day .ic{font-size:36px}
+.day .nm{font-weight:800;font-size:18px;margin:4px 0}
+.day .st{font-size:20px;letter-spacing:2px}
+.day .meta{font-size:13px;color:#8a5a33}
+button.main{background:#ff8a2a;color:#fff;border:0;border-radius:16px;padding:14px 26px;font:inherit;font-weight:800;font-size:20px;cursor:pointer;box-shadow:0 4px 0 #c75f0a}
+button.main:active{transform:translateY(3px);box-shadow:0 1px 0 #c75f0a}
+button.ghost{background:#fff;border:2px solid #e0b583;border-radius:12px;padding:8px 14px;font:inherit;cursor:pointer;color:#8a5a33}
+.tip{background:#fff8e6;border-left:6px solid #ffb02e;border-radius:12px;padding:12px 16px;font-size:20px;line-height:1.7;margin:12px 0}
+.tip b{color:#d9480f}
+.stage{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px}
+.cust{font-size:64px;line-height:1}
+.bubble{background:#fff;border:3px solid #f0c48a;border-radius:18px;padding:8px 14px;font-size:18px;position:relative}
+.dots{display:flex;gap:6px;margin:6px 0 12px;flex-wrap:wrap}
+.dot{width:16px;height:16px;border-radius:50%;background:#f1dcc0}
+.dot.done{background:#4caf50}.dot.cur{background:#ff8a2a;transform:scale(1.25)}
+.big{font-size:30px;font-weight:800;text-align:center;margin:8px 0 14px;line-height:1.6}
+.eq{font-size:46px}
+.story{font-size:22px;line-height:1.7;background:#fff8e6;border-radius:14px;padding:10px 14px;margin-bottom:8px}
+.subq{font-size:24px;font-weight:800;text-align:center;margin:8px 0}
+.expr{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;margin:10px 0}
+.tk{font-size:44px;font-weight:800;min-width:54px;text-align:center;padding:2px 8px;border-radius:14px;font-family:inherit;color:inherit}
+.tk.op{color:#d9480f}
+button.tk{background:#fff;border:3px dashed #ff9a3c;cursor:pointer}
+button.tk:hover{background:#fff1dc}
+button.tk.good{background:#c8f0c8;border:3px solid #4caf50}
+button.tk.reveal{background:#ffe08a;border:3px solid #ff8a2a}
+.tk.hl{background:#fff2a8}
+.instr{text-align:center;font-size:22px;margin:4px 0}
+.fields{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.fields label{font-size:22px;font-weight:800;display:flex;align-items:center;gap:8px}
+.fields input{width:110px;font-size:34px;text-align:center;border:3px solid #e0b583;border-radius:14px;padding:8px;font-family:inherit;color:#4a2f1b}
+.fields input:focus{outline:none;border-color:#ff8a2a;background:#fff8ec}
+.fields input.bad{border-color:#e03131;background:#ffe3e3}
+.fields input.ok{border-color:#4caf50;background:#e6f7e6}
+.fb{min-height:52px;text-align:center;font-size:21px;line-height:1.6;margin:8px 0;font-weight:700}
+.fb.ok{color:#2b8a3e}.fb.warn{color:#d9480f}.fb.info{color:#1c6dd0}
+.btns{text-align:center;margin-top:6px}
+.pop{position:fixed;left:50%;top:30%;transform:translateX(-50%);font-size:44px;font-weight:900;color:#ff8a2a;text-shadow:0 3px 0 #fff;pointer-events:none;animation:pop 1s ease-out forwards;z-index:9}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,20px) scale(.6)}25%{opacity:1;transform:translate(-50%,0) scale(1.2)}100%{opacity:0;transform:translate(-50%,-60px) scale(1)}}
+.fall{position:fixed;top:-40px;font-size:34px;animation:fall 3.2s linear forwards;z-index:8;pointer-events:none}
+@keyframes fall{to{transform:translateY(115vh) rotate(360deg)}}
+.errlist{font-size:17px;line-height:1.7}
+.errlist li{margin-bottom:6px}
+textarea.rep{width:100%;height:170px;border:2px solid #e0b583;border-radius:12px;padding:10px;font:inherit;font-size:15px;color:#4a2f1b}
+.stars{font-size:54px;text-align:center}
+.fever{}
+body.fever{background:linear-gradient(180deg,#ffd9b0,#ff9f6b)}
+.shake{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-8px)}80%{transform:translateX(8px)}}
+.dish{font-size:90px;text-align:center;animation:serve .8s ease-out}
+@keyframes serve{0%{transform:translateY(-120px) scale(.3) rotate(-30deg);opacity:0}60%{transform:translateY(8px) scale(1.2)}100%{transform:none;opacity:1}}
+.new{display:inline-block;background:#e03131;color:#fff;border-radius:8px;font-size:16px;padding:2px 8px;vertical-align:middle;margin-left:6px}
+.rest{background:#fff;border-radius:14px;padding:6px 12px;font-size:28px;text-align:center;margin-bottom:10px;letter-spacing:6px;min-height:46px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.item{background:#fff;border:3px solid #f0c48a;border-radius:16px;padding:10px;text-align:center}
+.item .e{font-size:46px}.item.have{background:#e6f7e6;border-color:#4caf50}.item.lock .e{filter:grayscale(1) opacity(.3)}
+.item button{margin-top:6px;border:0;border-radius:10px;background:#ff8a2a;color:#fff;font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+.item button:disabled{background:#ccc}
+.gift{font-size:76px;cursor:pointer;background:none;border:0;animation:wob 1s infinite}
+@keyframes wob{50%{transform:rotate(12deg) scale(1.1)}}
+.cust.happy{animation:hop .6s}
+@keyframes hop{40%{transform:translateY(-24px) rotate(-8deg)}70%{transform:translateY(-6px) rotate(8deg)}}
+.fevtag{color:#e8590c;font-weight:900}
+.pile{font-size:28px;background:#fff8e6;border-radius:14px;padding:8px 12px;text-align:center;line-height:1.5;word-break:break-all;margin:8px 0;min-height:48px}
+.plates{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0}
+.plate{background:#fff;border:3px solid #f0c48a;border-radius:16px;min-width:92px;max-width:130px;padding:6px;font:inherit;font-size:26px;cursor:pointer;color:inherit}
+.plate:hover{border-color:#ff8a2a;background:#fff8ec}
+.plate .pf{font-size:20px;min-height:30px;word-break:break-all;line-height:1.3}
+.zone{background:#fff8e6;border-radius:16px;padding:8px 10px;margin:8px 0}
+.zt{font-weight:800;font-size:19px;text-align:center}
+.tbl{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;min-height:56px;padding:4px}
+.trayrow{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:center;min-height:64px;background:#fff;border:3px dashed #e0b583;border-radius:40px;padding:4px 12px;margin-top:4px}
+.fd{font-size:38px;background:none;border:0;cursor:pointer;padding:2px 4px;border-radius:12px;font-family:inherit}
+.fd:hover{background:#ffe9c7;transform:scale(1.15)}
+.hintline{text-align:center;font-size:15px;color:#8a5a33}
+.small{font-size:13px;color:#8a5a33;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="s-map">
+  <h1>🍳 算式小餐館</h1>
+  <div class="sub">一天一天開店,把每位客人的算式做對,賺金幣、集貼紙!</div>
+  <div class="bar"><span class="coin">🪙 <span id="coin-map">0</span> 金幣</span><span id="stk-map"></span></div>
+  <div class="rest" id="rest-map"></div>
+  <div class="btns" style="margin-bottom:12px"><button class="ghost" id="b-shop">🛍️ 裝潢商店</button> <button class="ghost" id="b-album">📖 美食圖鑑</button></div>
+  <div class="days" id="days"></div>
+  <div class="small">建議照順序玩,每天大約 10 分鐘。回報文字做完每一天都可以複製給老師。<br><a href="#" id="reset" style="color:#8a5a33">重置全部進度</a></div>
+</section>
+
+<section id="s-intro" class="hidden">
+  <div class="card">
+    <div style="font-size:60px;text-align:center" id="i-ic"></div>
+    <h1 id="i-name"></h1>
+    <div class="tip" id="i-tip"></div>
+    <div class="btns"><button class="main" id="i-go">開店囉!🚪</button>
+    <button class="ghost" id="i-back">回地圖</button></div>
+  </div>
+</section>
+
+<section id="s-play" class="hidden">
+  <div class="bar"><span id="p-day" style="font-weight:800"></span><span>連對 🔥 <b id="p-combo">0</b></span><span class="coin">🪙 <span id="coin-play">0</span></span></div>
+  <div class="dots" id="dots"></div>
+  <div class="stage"><div class="cust" id="cust"></div><div class="bubble" id="bubble"></div></div>
+  <div class="card" id="qa"></div>
+</section>
+
+<section id="s-shop" class="hidden">
+  <h1>🛍️ 裝潢商店</h1>
+  <div class="bar"><span class="coin">🪙 <span id="coin-shop">0</span> 金幣</span><button class="ghost" id="shop-back">回地圖</button></div>
+  <div class="rest" id="rest-shop"></div>
+  <div class="grid2" id="shopgrid"></div>
+  <div class="fb info" id="shopfb"></div>
+</section>
+
+<section id="s-album" class="hidden">
+  <h1>📖 美食圖鑑</h1>
+  <div class="bar"><span class="coin" id="album-n"></span><button class="ghost" id="album-back">回地圖</button></div>
+  <div class="grid2" id="albumgrid"></div>
+</section>
+
+<section id="s-done" class="hidden">
+  <div class="card">
+    <div class="stars" id="d-stars"></div>
+    <h1 id="d-title"></h1>
+    <div class="sub" id="d-sum"></div>
+    <div id="d-err"></div>
+    <h3>📋 給老師的回報(可以複製貼到 Discord)</h3>
+    <textarea class="rep" id="d-rep" readonly></textarea>
+    <div class="btns" style="margin-top:10px"><button class="main" id="d-copy">複製回報</button> <button class="ghost" id="d-back">回地圖</button></div>
+    <div class="fb info" id="d-copyfb"></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+// ============ 工具 ============
+const $=s=>document.querySelector(s);
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const norm=s=>String(s).replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).trim();
+function uniq(gen,n,key){const seen=new Set(),out=[];let g=0;while(out.length<n&&g++<800){const x=gen(out.length);const k=key(x);if(seen.has(k))continue;seen.add(k);out.push(x);}return out;}
+let _ac=null;
+function beep(ok){try{_ac=_ac||new (window.AudioContext||window.webkitAudioContext)();const t=_ac.currentTime;(ok?[660,880,1100]:[300,220]).forEach((f,i)=>{const o=_ac.createOscillator(),g=_ac.createGain();o.connect(g);g.connect(_ac.destination);o.frequency.value=f;o.type=ok?'triangle':'sine';g.gain.setValueAtTime(.07,t+i*.09);g.gain.exponentialRampToValueAtTime(.001,t+i*.09+.14);o.start(t+i*.09);o.stop(t+i*.09+.15);});}catch(e){}}
+
+// ============ 存檔 ============
+let SAVE={coins:0,days:{},items:{},dishes:{}};
+try{const s=localStorage.getItem('mathChef1');if(s)SAVE=Object.assign(SAVE,JSON.parse(s));}catch(e){}
+SAVE.items=SAVE.items||{};SAVE.dishes=SAVE.dishes||{};
+function save(){try{localStorage.setItem('mathChef1',JSON.stringify(SAVE));}catch(e){}}
+
+// ============ 算式題 ============
+const OPS=['×','÷','+','−'];
+function calc(l,op,r){return op==='+'?l+r:op==='−'?l-r:op==='×'?l*r:l/r;}
+function findOp(cur){const i=cur.findIndex(t=>t==='×'||t==='÷');if(i>=0)return i;return cur.findIndex(t=>t==='+'||t==='−');}
+function valid(tokens){let cur=tokens.slice();while(cur.length>1){const i=findOp(cur);const l=cur[i-1],op=cur[i],r=cur[i+1];const v=calc(l,op,r);if(!Number.isInteger(v)||v<0)return false;cur.splice(i-1,3,v);}return cur[0]<=200;}
+function evalTokens(tokens){let cur=tokens.slice();while(cur.length>1){const i=findOp(cur);cur.splice(i-1,3,calc(cur[i-1],cur[i],cur[i+1]));}return cur[0];}
+function chips(tokens,o){o=o||{};return tokens.map((t,j)=>{const isOp=j%2===1;const hl=o.hl!=null&&j>=o.hl-1&&j<=o.hl+1;const cls='tk '+(isOp?'op':'num')+(hl?' hl':'');
+  return (isOp&&o.click)?`<button class="${cls}" data-j="${j}">${t}</button>`:`<span class="${cls}">${t}</span>`;}).join('');}
+function pickHint(cur,j,idx){const o=cur[j],w=cur[idx];const big=x=>x==='×'||x==='÷';
+  if(!big(o)&&big(w))return '先看看有沒有 × 或 ÷!乘、除要比加、減先算喔。';
+  if(big(o)&&big(w)&&j>idx)return '× 和 ÷ 一樣大,要從最左邊的開始算喔。';
+  if(!big(o)&&!big(w)&&j>idx)return '+ 和 − 一樣大,要從左邊開始算喔。';
+  return '再想想看,哪一個要最先算?';}
+function exprStages(tokens,challenge){
+  const stages=[];let cur=tokens.slice();const final=evalTokens(tokens);
+  const text=tokens.join(' ');
+  if(challenge){stages.push({type:'fields',direct:true,html:`<div class="instr">直接算出答案!(先乘除、後加減)</div><div class="expr">${chips(tokens)}<span class="tk">=</span><span class="tk">?</span></div>`,
+    fields:[{label:'答案',ans:final}],log:text,fmt:v=>String(v[0]),tag:()=>'直接計算錯誤',explain:''});}
+  while(cur.length>1){
+    const idx=findOp(cur);const l=cur[idx-1],op=cur[idx],r=cur[idx+1];const res=calc(l,op,r);const snap=cur.slice();
+    stages.push({type:'pick',tokens:snap,idx,log:text,hintFn:j=>pickHint(snap,j,idx)});
+    stages.push({type:'fields',html:`<div class="expr">${chips(snap,{hl:idx})}</div><div class="subq">${l} ${op} ${r} = ?</div>`,
+      fields:[{label:'',ans:res}],log:`${text} 的 ${l}${op}${r}`,fmt:v=>String(v[0]),
+      tag:()=>'計算錯誤',hint:()=>op==='×'?`想想九九乘法:${l} × ${r}`:op==='÷'?`想想:${r} × ? = ${l}`:`${l} ${op} ${r},慢慢算!`,
+      explain:`${l} ${op} ${r} = ${res}`});
+    cur.splice(idx-1,3,res);
+  }
+  return {kind:'expr',title:text+' = ?',stages};
+}
+function exprOrder(tokens,challenge){return exprStages(tokens,challenge);}
+function mk(fn,challenge){let t;let g=0;do{t=fn();}while(!valid(t)&&g++<200);return exprOrder(t,challenge);}
+
+// ---- 餘數題 ----
+function remStage(html,a,b,labels,log){
+  const q=Math.floor(a/b),r=a%b;labels=labels||[['商',''],['餘數','']];
+  return {type:'fields',html,fields:[{label:labels[0][0],unit:labels[0][1],ans:q},{label:labels[1][0],unit:labels[1][1],ans:r}],log:log||`${a} ÷ ${b}`,
+    fmt:v=>`商 ${v[0]} 餘 ${v[1]}`,
+    hint:g=>{if(g[1]>=b)return `餘數 ${g[1]} 不能比除數 ${b} 大或一樣,還可以再分一次喔!`;
+      if(r===0&&g[1]>0)return `想想看:${b} 的九九乘法裡,有沒有剛好等於 ${a} 的?`;
+      return `驗算一下:${b} × 商 + 餘數,要剛好等於 ${a}。`;},
+    tag:g=>(r===0&&g[1]>0)?'整除答成有餘數':(g[1]>=b?'餘數太大':'計算錯誤'),
+    explain:r===0?`${b} × ${q} = ${a},剛好分完 → 商 ${q}、餘數 0`:`${b} × ${q} = ${b*q},${a} − ${b*q} = ${r} → 商 ${q}、餘數 ${r}`};
+}
+function genRem(exact){const b=rnd(2,9);const q=rnd(2,9);const r=exact?0:rnd(1,b-1);return {a:b*q+r,b};}
+const FOODS=['🍩','🍪','🍓','🍙','🧁','🍕','🍬','🥟'];
+function dealStage(a,b,food,text,plate){return {type:'deal',a,b,food,text,plate:plate||'🍽️'};}
+function serveStage(a,b,main,snack,text,titles,log,labels){const base=remStage('',a,b,labels,log);return Object.assign(base,{type:'serve',main,snack,text,titles});}
+function remOrder(a,b,noDeal){
+  if(noDeal)return {kind:'rem',title:`${a} ÷ ${b}`,stages:[remStage(`<span class="eq">${a} ÷ ${b} = ?</span>`,a,b)]};
+  const m=pick(FOODS);const sn=pick(FOODS.filter(x=>x!==m));
+  return {kind:'rem',title:`${a} ÷ ${b}`,stages:[serveStage(a,b,m,sn,`🧑‍🍳 客人說:「老闆,我要 <span class="eq">${a} ÷ ${b}</span>!<br>主餐 ${m} 要放<b>「商」</b>個,小點心 ${sn} 要放<b>「餘數」</b>個。」`,['商:主餐要放幾個?','餘數:小點心要放幾個?'],`${a} ÷ ${b}`)]};}
+const W2=[
+ {f:'🍬',p:'📦',i:'🍬',t:(a,d)=>`有 ${a} 顆糖,每盒裝 ${d} 顆。<br>最多裝滿幾盒?還剩幾顆?`,l:[['裝滿','盒'],['剩下','顆']]},
+ {f:'🧒',p:'🚌',i:'🚌',t:(a,d)=>`${a} 位小朋友搭車,每輛車坐 ${d} 人。<br>坐滿幾輛?還有幾人沒位子?`,l:[['坐滿','輛'],['沒位子','人']]},
+ {f:'🍪',p:'🛍️',i:'🍪',t:(a,d)=>`有 ${a} 片餅乾,每包放 ${d} 片。<br>最多裝滿幾包?還剩幾片?`,l:[['裝滿','包'],['剩下','片']]},
+ {f:'🥚',p:'🥡',i:'🥚',t:(a,d)=>`有 ${a} 顆蛋,每盒放 ${d} 顆。<br>最多裝滿幾盒?還剩幾顆?`,l:[['裝滿','盒'],['剩下','顆']]},
+ {f:'✏️',p:'🗂️',i:'✏️',t:(a,d)=>`有 ${a} 枝鉛筆,每組發 ${d} 枝。<br>最多發給幾組?還剩幾枝?`,l:[['發給','組'],['剩下','枝']]}
+];
+function wordRemOrder(a,d){const w=pick(W2);
+  const st=serveStage(a,d,w.p,w.f,`<div class="story">${w.i} ${w.t(a,d)}</div><div class="instr">把答案用食物放到盤子上:<br>${w.p} 放<b>「商」</b>個,${w.f} 放<b>「餘數」</b>個</div>`,[`${w.l[0][0]}幾${w.l[0][1]}?`,`${w.l[1][0]}幾${w.l[1][1]}?`],`${a} ÷ ${d}(應用)`,w.l);
+  return {kind:'wrem',title:`${a} ÷ ${d} 應用題`,stages:[st]};}
+function ceilOrder(a,d){const q=Math.floor(a/d),r=a%d,ans=Math.ceil(a/d);
+  const st={type:'fields',html:`<div class="story">🚌 ${a} 位小朋友要搭車,每輛車最多坐 ${d} 人。<br>最少要幾輛車,才能<b>全部</b>載走?</div>`,fields:[{label:'最少',unit:'輛',ans}],log:`${a}人每車${d}人 最少幾輛`,
+    fmt:v=>String(v[0]),hint:g=>(r>0&&g[0]===q)?`先算 ${a} ÷ ${d},那剩下的 ${r} 個人要怎麼辦呢?`:(r===0&&g[0]===q+1)?`剛好坐滿,不需要再多一輛喔!`:`先用除法算算看,再想想剩下的人。`,
+    tag:g=>(r>0&&g[0]===q)?'忘了剩下的人要再一輛':(r===0&&g[0]===q+1)?'整除還多加一輛':'計算錯誤',
+    explain:r>0?`${a} ÷ ${d} = ${q} …… ${r},還剩 ${r} 人要再坐一輛 → ${q} + 1 = ${ans} 輛`:`${a} ÷ ${d} = ${q},剛好坐滿,不用再多一輛 → ${ans} 輛`};
+  st.type='serve';st.main='🚌';st.snack=null;st.text=st.html+'<div class="instr">用 🚌 擺出答案</div>';st.titles=['最少要幾輛車?'];
+  return {kind:'ceil',title:`${a} 人每車 ${d} 人`,stages:[st]};}
+
+// ---- 兩步驟應用題 ----
+function wordOrder(challenge){
+  const T=[
+   ()=>{const n=pick([['麵包','個'],['蛋糕','塊'],['飯糰','個']]),m=pick(['牛奶','果汁','紅茶']);const b=rnd(3,9),c=rnd(2,6),a=rnd(5,25);
+     return {text:`🛒 一${n[1]}${n[0]} ${b} 元,小美買了 ${c} ${n[1]}。再買一瓶${m} ${a} 元。<br>一共要付多少元?`,
+       steps:[{q:`${c} ${n[1]}${n[0]}要多少元?`,ans:b*c,u:'元',h:`每${n[1]} ${b} 元,買 ${c} ${n[1]}:用乘法`,e:`${b} × ${c} = ${b*c}`},{q:`再加${m},一共多少元?`,ans:b*c+a,u:'元',h:`${b*c} 再加 ${a}`,e:`${b*c} + ${a} = ${b*c+a}`}]};},
+   ()=>{const b=rnd(3,9),c=rnd(2,6),a=b*c+rnd(3,30);
+     return {text:`💰 小明有 ${a} 元,買了 ${c} 枝筆,每枝 ${b} 元。<br>他還剩多少元?`,
+       steps:[{q:`買 ${c} 枝筆花了多少元?`,ans:b*c,u:'元',h:`每枝 ${b} 元,買 ${c} 枝:用乘法`,e:`${b} × ${c} = ${b*c}`},{q:`原本 ${a} 元,還剩多少元?`,ans:a-b*c,u:'元',h:`${a} 減去花掉的 ${b*c}`,e:`${a} − ${b*c} = ${a-b*c}`}]};},
+   ()=>{const c=rnd(2,6),q=rnd(2,8),a=rnd(2,9);
+     return {text:`⭐ 有 ${c*q} 張貼紙,平均分給 ${c} 個人。每人再多拿到 ${a} 張。<br>每個人現在有幾張?`,
+       steps:[{q:`${c*q} 張平均分給 ${c} 人,每人先分到幾張?`,ans:q,u:'張',h:`平均分:用除法`,e:`${c*q} ÷ ${c} = ${q}`},{q:`再多拿 ${a} 張,現在有幾張?`,ans:q+a,u:'張',h:`${q} 加 ${a}`,e:`${q} + ${a} = ${q+a}`}]};},
+   ()=>{const c=rnd(2,6),q=rnd(3,9),e=rnd(1,q-1);
+     return {text:`🍪 一盒餅乾有 ${c*q} 片,平均分給 ${c} 位小朋友。每人先吃掉 ${e} 片。<br>每人手上還剩幾片?`,
+       steps:[{q:`${c*q} 片平均分給 ${c} 人,每人分到幾片?`,ans:q,u:'片',h:`平均分:用除法`,e:`${c*q} ÷ ${c} = ${q}`},{q:`吃掉 ${e} 片,還剩幾片?`,ans:q-e,u:'片',h:`${q} 減 ${e}`,e:`${q} − ${e} = ${q-e}`}]};}
+  ];
+  const w=pick(T)();const final=w.steps[w.steps.length-1].ans;const stages=[];
+  if(challenge)stages.push({type:'fields',direct:true,html:`<div class="story">${w.text}</div><div class="instr">直接寫出答案!</div>`,fields:[{label:'答案',unit:w.steps[w.steps.length-1].u,ans:final}],log:w.text.replace(/<br>/g,' ').replace(/^[^ ]+ /,''),fmt:v=>String(v[0]),tag:()=>'應用題直接計算錯誤',explain:''});
+  w.steps.forEach((s,i)=>stages.push({type:'fields',html:`<div class="story">${w.text}</div><div class="subq">第 ${i+1} 步:${s.q}</div>`,fields:[{label:'答',unit:s.u,ans:s.ans}],
+    log:w.text.replace(/<br>/g,' ').replace(/^[^ ]+ /,'')+`(第${i+1}步)`,fmt:v=>String(v[0]),hint:()=>s.h,tag:()=>'步驟計算錯誤',explain:s.e}));
+  return {kind:'word',title:'應用題',stages};
+}
+
+// ============ 每天的關卡 ============
+const DAYS=[
+ {id:1,icon:'🍱',name:'整除還是有餘數?',
+  tip:'有些除法<b>剛好分完</b>,餘數就是 <b>0</b>(例:8 ÷ 4 = 2 …… 0)。<br>有剩下才有餘數,而且<b>餘數一定要比除數小</b>!<br>每一題都要寫「商」和「餘數」兩格喔。',
+  gen(){const ex=shuffle([true,true,true,false,false,false,false,false]);return uniq(i=>{const x=genRem(ex[i]);return remOrder(x.a,x.b);},8,o=>o.title);}},
+ {id:2,icon:'📦',name:'裝箱出貨',
+  tip:'裝箱題:<b>商 = 裝滿幾盒</b>,<b>餘數 = 剩下幾個</b>。<br>如果問「最少要幾盒才夠」:有剩下的,就要<b>再多一盒</b>;剛好分完就不用多!',
+  gen(){const mk1=()=>{const d=rnd(3,9),q=rnd(2,8),r=rnd(1,d-1);return {a:d*q+r,d};};
+    const L=[];for(let i=0;i<5;i++){const x=(i===0)?(()=>{const d=rnd(3,9),q=rnd(2,8);return {a:d*q,d};})():mk1();L.push(wordRemOrder(x.a,x.d));}
+    [true,true,false].forEach(s=>{const d=rnd(3,9),q=rnd(2,8),r=s?rnd(1,d-1):0;L.push(ceilOrder(d*q+r,d));});
+    return shuffle(L);}},
+ {id:3,icon:'🥘',name:'先乘後加減',
+  tip:'算式裡有 <b>×</b> 的時候,要<b>先算乘</b>,再算加減!<br>例:3 + 4 × 5 → 先算 4 × 5 = 20,再算 3 + 20 = 23。<br>每一步先「點」要先算的符號,再把答案打出來。',
+  gen(){const f=[
+    ()=>[rnd(2,30),'+',rnd(2,9),'×',rnd(2,9)],()=>[rnd(2,9),'×',rnd(2,9),'+',rnd(2,30)],
+    ()=>[rnd(2,30),'+',rnd(2,9),'×',rnd(2,9)],()=>[rnd(2,9),'×',rnd(2,9),'−',rnd(1,20)],
+    ()=>[rnd(30,90),'−',rnd(2,9),'×',rnd(2,9)],()=>[rnd(30,90),'−',rnd(2,9),'×',rnd(2,9)],
+    ()=>[rnd(2,9),'×',rnd(2,9),'+',rnd(2,9),'×',rnd(2,9)],()=>[rnd(2,9),'×',rnd(2,6),'+',rnd(2,9),'×',rnd(2,6)]];
+    return uniq(i=>mk(f[i%f.length],false),8,o=>o.title);}},
+ {id:4,icon:'🍲',name:'先除後加減',
+  tip:'<b>÷</b> 也要比 + − <b>先算</b>!<br>例:20 − 12 ÷ 3 → 先算 12 ÷ 3 = 4,再算 20 − 4 = 16。<br>× 和 ÷ 一樣大,這時候要<b>從左邊開始算到右邊</b>。',
+  gen(){const dv=()=>{const c=rnd(2,9),q=rnd(2,9);return [c*q,c];};
+    const f=[
+     ()=>{const [b,c]=dv();return [rnd(2,30),'+',b,'÷',c];},
+     ()=>{const [b,c]=dv();return [b,'÷',c,'+',rnd(2,30)];},
+     ()=>{const [b,c]=dv();return [rnd(10,60),'−',b,'÷',c];},
+     ()=>{const [b,c]=dv();return [rnd(10,60),'−',b,'÷',c];},
+     ()=>{const [b,c]=dv();return [rnd(2,30),'+',b,'÷',c];},
+     ()=>{const [b,c]=dv();return [b,'÷',c,'×',rnd(2,5)];},
+     ()=>{const c=rnd(2,6);return [rnd(2,9),'×',c*rnd(1,3),'÷',c];},
+     ()=>{const [b,c]=dv();return [rnd(2,9),'×',rnd(2,9),'−',b,'÷',c];}];
+    return uniq(i=>mk(f[i%f.length],false),8,o=>o.title);}},
+ {id:5,icon:'🧾',name:'兩步驟應用題',
+  tip:'應用題要<b>一步一步</b>來。<br>每個步驟都有一個答案,先算出第一步,再用它算第二步。<br>想一想:要用<b>乘、除、加、減</b>哪一個?',
+  gen(){return uniq(()=>wordOrder(false),8,o=>o.stages[0].html+o.stages[0].fields[0].ans);}},
+ {id:6,icon:'👑',name:'大廚挑戰日',
+  tip:'今天先<b>自己算出答案</b>,再打進去!<br>如果錯了,老闆會陪你<b>一步一步檢查</b>。<br>最後還有一位<b>美食評審</b>要來挑戰你喔!',
+  gen(){const dv=()=>{const c=rnd(2,5),q=rnd(2,5);return [c*q,c];};
+    const L=[];
+    {const x=genRem(false);L.push(remOrder(x.a,x.b,true));}
+    {const x=genRem(true);L.push(remOrder(x.a,x.b,true));}
+    L.push(mk(()=>[rnd(2,30),'+',rnd(2,9),'×',rnd(2,9)],true));
+    L.push(mk(()=>{const [b,c]=dv();return [rnd(15,60),'−',b,'÷',c];},true));
+    L.push(wordOrder(true));L.push(wordOrder(true));
+    L.push(mk(()=>{const [b,c]=dv();return [b,'÷',c,'×',rnd(2,6)];},true));
+    L.push(mk(()=>[rnd(2,9),'×',rnd(2,9),'+',rnd(2,9),'×',rnd(2,6)],true));
+    L.push(Object.assign(mk(()=>{const [d,e]=dv();return [rnd(2,20),'+',rnd(2,9),'×',rnd(2,6),'−',d,'÷',e];},true),{boss:true}));
+    return L;}}
+];
+const CUST=['🐱','🐶','🐰','🐻','🐼','🦊','🐯','🐸','🦁'];
+const NAMES=['小橘貓咪咪','狗狗阿財','兔兔小白','熊熊阿福','貓熊圓圓','狐狸小火','老虎阿虎','青蛙呱呱','獅子大王'];
+const SHOP=[{id:'plant',e:'🪴',n:'盆栽',p:80},{id:'lantern',e:'🏮',n:'紅燈籠',p:120},{id:'cat',e:'🐈',n:'招財貓',p:180},{id:'music',e:'🎵',n:'音樂盒',p:240},{id:'art',e:'🖼️',n:'名畫',p:300},{id:'sofa',e:'🛋️',n:'舒適沙發',p:380},{id:'neon',e:'🌟',n:'霓虹招牌',p:480},{id:'hat',e:'👨‍🍳',n:'大廚帽',p:600}];
+const DISHES=[['🍕','披薩'],['🍔','漢堡'],['🍜','拉麵'],['🍣','壽司'],['🍩','甜甜圈'],['🍰','蛋糕'],['🍙','飯糰'],['🥟','水餃'],['🍤','炸蝦'],['🥞','鬆餅'],['🍦','冰淇淋'],['🧁','杯子蛋糕'],['🍛','咖哩飯'],['🌮','塔可餅'],['🥗','沙拉'],['🍡','三色糰子'],['🍿','爆米花'],['🥐','可頌'],['🍓','草莓'],['🍉','西瓜'],['🍟','薯條'],['🥧','派'],['🍱','便當'],['🍲','火鍋']].map(x=>({e:x[0],n:x[1]}));
+function restStr(){const a=SHOP.filter(x=>SAVE.items[x.id]).map(x=>x.e).join(' ');return a||'🏠 我的小餐館(去商店買裝潢吧!)';}
+const LINES=['好餓喔,快幫我算!','今天的特餐是哪一道?','老闆加油!','聽說這裡的算式最好吃!','我等好久了~','請幫我算清楚喔!'];
+
+// ============ 遊戲狀態 ============
+let S=null;
+function show(id){document.body.classList.remove('fever');['map','intro','play','done','shop','album'].forEach(x=>$('#s-'+x).classList.toggle('hidden',x!==id));window.scrollTo(0,0);}
+function starsStr(n){return '⭐'.repeat(n)+'☆'.repeat(3-n);}
+function renderMap(){
+  $('#coin-map').textContent=SAVE.coins;
+  $('#days').innerHTML=DAYS.map(d=>{const r=SAVE.days[d.id];return `<button class="day" data-id="${d.id}"><div class="ic">${d.icon}</div><div class="nm">Day ${d.id}・${d.name}</div><div class="st">${r?starsStr(r.stars):'☆☆☆'}</div><div class="meta">${r?`最佳:一次就對 ${r.first}/${r.n}`:'還沒開店'}</div></button>`;}).join('');
+  $('#days').querySelectorAll('.day').forEach(b=>b.onclick=()=>openIntro(+b.dataset.id));
+  $('#rest-map').textContent=restStr();
+  $('#stk-map').textContent=DAYS.filter(d=>SAVE.days[d.id]).map(d=>d.icon).join(' ');
+}
+function renderShop(msg){
+  $('#coin-shop').textContent=SAVE.coins;$('#rest-shop').textContent=restStr();$('#shopfb').textContent=msg||'';
+  $('#shopgrid').innerHTML=SHOP.map(x=>{const h=SAVE.items[x.id];return `<div class="item ${h?'have':''}"><div class="e">${x.e}</div><div>${x.n}</div>${h?'<div>✅ 已擁有</div>':`<button data-id="${x.id}" ${SAVE.coins<x.p?'disabled':''}>🪙 ${x.p}</button>`}</div>`;}).join('');
+  $('#shopgrid').querySelectorAll('button').forEach(b=>b.onclick=()=>{const x=SHOP.find(y=>y.id===b.dataset.id);if(SAVE.coins<x.p)return;SAVE.coins-=x.p;SAVE.items[x.id]=1;save();beep(true);renderShop(`買到 ${x.e}${x.n}!餐館變漂亮了 ✨`);});
+}
+function renderAlbum(){const got=DISHES.filter(d=>SAVE.dishes[d.e]).length;$('#album-n').textContent=`已收集 ${got} / ${DISHES.length} 道${got===DISHES.length?' 🏆 全收集!':''}`;
+  $('#albumgrid').innerHTML=DISHES.map(d=>{const c=SAVE.dishes[d.e];return `<div class="item ${c?'have':'lock'}"><div class="e">${d.e}</div><div>${c?d.n+' ×'+c:'???'}</div></div>`;}).join('');}
+function openIntro(id){const d=DAYS.find(x=>x.id===id);S={day:d};$('#i-ic').textContent=d.icon;$('#i-name').textContent=`Day ${d.id}・${d.name}`;$('#i-tip').innerHTML=d.tip;show('intro');}
+function startDay(){
+  const d=S.day;S={day:d,orders:d.gen(),i:0,errors:[],first:0,combo:0,maxCombo:0,gain:0,t0:Date.now(),k:0,tags:{}};
+  $('#p-day').textContent=`${d.icon} Day ${d.id}・${d.name}`;show('play');playOrder();
+}
+function updHud(){document.body.classList.toggle('fever',S.combo>=3&&!$('#s-play').classList.contains('hidden'));$('#coin-play').textContent=SAVE.coins;$('#p-combo').innerHTML=S.combo+(S.combo>=5?' <span class="fevtag">火焰×2!</span>':'');
+  $('#dots').innerHTML=S.orders.map((o,i)=>`<span class="dot ${i<S.i?'done':i===S.i?'cur':''}"></span>`).join('');}
+function playOrder(){
+  const o=S.orders[S.i];S.k=0;o.err=false;o.early=false;
+  $('#cust').textContent=o.boss?'👑':CUST[S.i%CUST.length];
+  $('#cust').classList.remove('happy');$('#bubble').textContent=o.boss?'👑 美食評審來了!最後一道,加油!':`${NAMES[S.i%9]}:${pick(LINES)}`;
+  updHud();runStage();
+}
+function curStage(){return S.orders[S.i].stages[S.k];}
+function runStage(){const st=curStage();S.dealHTML=st.type==='deal'?null:S.dealHTML;if(st.type==='pick')runPick(st);else if(st.type==='deal')runDeal(st);else if(st.type==='serve')runServe(st);else runFields(st);}
+function runServe(st){
+  const qa=$('#qa');let tries=0,lock=false;const two=!!st.snack;
+  const N=[Math.min(14,Math.max(st.fields[0].ans+3,8)),two?Math.max(st.fields[1].ans+3,6):0];const on=[0,0];const foods=[st.main,st.snack];let msg='',cls='';
+  const zone=k=>`<div class="zone"><div class="zt">${st.titles[k]}</div><div class="tbl">${Array.from({length:N[k]-on[k]},()=>`<button class="fd" data-k="${k}" data-s="t" ${lock?'disabled':''}>${foods[k]}</button>`).join('')||'<span class="hintline">桌上沒有了</span>'}</div><div class="trayrow">🍽️ ${Array.from({length:on[k]},()=>`<button class="fd" data-k="${k}" data-s="p" ${lock?'disabled':''}>${foods[k]}</button>`).join('')}</div></div>`;
+  const render=()=>{qa.innerHTML=`<div class="big" style="font-size:24px">${st.text}</div>${zone(0)}${two?zone(1):''}<div class="hintline">點桌上的食物放到盤子,再點盤子裡的可以拿回來</div><div id="fb" class="fb ${cls}">${msg}</div><div class="btns">${lock?'':'<button class="main" id="ok">上菜! 🍽️</button>'}</div>`;
+    if(lock)return;
+    qa.querySelectorAll('.fd').forEach(b=>b.onclick=()=>{const k=+b.dataset.k;if(b.dataset.s==='t'){on[k]++;}else{on[k]--;}msg='';cls='';render();});
+    $('#ok').onclick=submit;};
+  const submit=()=>{const given=two?[on[0],on[1]]:[on[0]];const bad=given.map((g,i)=>g!==st.fields[i].ans);
+    if(!bad.some(Boolean)){lock=true;beep(true);msg='✅ 上菜成功!';cls='ok';render();setTimeout(nextStage,900);return;}
+    tries++;beep(false);if(tries===1){logErr(st,st.fmt(given.length===1?[given[0],0]:given),st.tag(given.length===1?[given[0],0]:given));}
+    if(tries===1){msg=st.hint(given.length===1?[given[0],0]:given);cls='warn';render();const z=qa.querySelector('.zone');z.classList.add('shake');}
+    else{lock=true;msg=`正確做法:${st.explain}<br><button class="main" id="go2" style="font-size:18px;padding:8px 18px;margin-top:6px">我知道了 ➜</button>`;cls='info';render();$('#go2').onclick=nextStage;}};
+  render();
+}
+function runDeal(st){
+  const qa=$('#qa');let pile=st.a;const pl=Array(st.b).fill(0);let lock=false;let msg='';
+  const platesHTML=()=>`<div class="plates">${pl.map((n,i)=>`<button class="plate" data-i="${i}"><div>${st.plate}</div><div class="pf">${n?st.food.repeat(n):'&nbsp;'}</div></button>`).join('')}</div>`;
+  const render=()=>{
+    qa.innerHTML=`<div class="story">${st.text}</div><div class="subq">桌上的食物:</div><div class="pile">${pile?st.food.repeat(pile):'桌上沒有了'}</div>${platesHTML()}<div class="btns">${lock?'':'<button class="main" id="rnd">每份發 1 個 🔄</button> <button class="ghost" id="rst">↩ 重來</button> <button class="ghost" id="skip">我會算,直接填答案 ➜</button>'}</div><div id="fb" class="fb ${lock?'ok':'warn'}">${msg}</div>`;
+    if(lock)return;
+    qa.querySelectorAll('.plate').forEach(b=>b.onclick=()=>{if(pile>0){pl[+b.dataset.i]++;pile--;beep(true);after();}});
+    $('#rnd').onclick=()=>{if(pile>=st.b){for(let i=0;i<st.b;i++)pl[i]++;pile-=st.b;beep(true);after();}else{msg=`只剩 ${pile} 個,不夠每份都發 1 個了喔!`;render();}};
+    $('#rst').onclick=()=>{pile=st.a;pl.fill(0);msg='';render();};
+    $('#skip').onclick=()=>{S.dealHTML=null;nextStage();};
+  };
+  const after=()=>{const eq=pl.every(n=>n===pl[0]);
+    if(pile<st.b&&eq){lock=true;msg='✅ 分好了!看看每份有幾個、桌上還剩幾個?';S.dealHTML=`<div class="plates">${pl.map(n=>`<div class="plate" style="cursor:default"><div>${st.plate}</div><div class="pf">${st.food.repeat(n)}</div></div>`).join('')}</div><div class="pile">桌上剩下:${pile?st.food.repeat(pile):'沒有了'}</div>`;render();setTimeout(nextStage,2200);return;}
+    msg=(!eq&&pile<st.b)?'每份的數量還不一樣多喔,按「↩ 重來」再試試!':'';render();};
+  render();
+}
+function nextStage(){const o=S.orders[S.i];S.k++;if(o.early||S.k>=o.stages.length)finishOrder();else runStage();}
+function fb(msg,cls){const e=$('#fb');if(e){e.className='fb '+(cls||'');e.innerHTML=msg;}}
+function logErr(st,given,tag){const o=S.orders[S.i];o.err=true;S.combo=0;updHud();
+  S.errors.push({text:st.log,given:given,correct:st.fmt?st.fmt(st.fields.map(f=>f.ans)):'',tag:tag||''});if(tag)S.tags[tag]=(S.tags[tag]||0)+1;}
+
+function runPick(st){
+  const qa=$('#qa');let lock=false;
+  qa.innerHTML=`<div class="instr">👆 點一下要<b>最先算</b>的符號</div><div class="expr">${chips(st.tokens,{click:true})}</div><div id="fb" class="fb"></div>`;
+  let wrong=0;
+  qa.querySelectorAll('button.op').forEach(b=>b.onclick=()=>{
+    if(lock)return;const j=+b.dataset.j;
+    if(j===st.idx){lock=true;b.classList.add('good');beep(true);fb('對!就是它先算 ✅','ok');setTimeout(nextStage,650);}
+    else{wrong++;beep(false);
+      if(wrong===1){const o=S.orders[S.i];o.err=true;S.combo=0;updHud();S.errors.push({text:st.log,given:`先算「${st.tokens[j]}」`,correct:`先算「${st.tokens[st.idx]}」`,tag:'運算順序'});S.tags['運算順序']=(S.tags['運算順序']||0)+1;}
+      fb(st.hintFn(j),'warn');
+      if(wrong>=2){lock=true;const t=qa.querySelector(`button[data-j="${st.idx}"]`);t.classList.add('reveal');fb('答案是這個符號喔!我們一起繼續 👉','info');setTimeout(nextStage,1700);}}
+  });
+}
+function runFields(st){
+  const qa=$('#qa');let tries=0,lock=false;
+  const pre=(st.withDeal&&S.dealHTML)?S.dealHTML:'';S.dealHTML=null;
+  qa.innerHTML=`${pre}<div class="big">${st.html}</div><div class="fields">${st.fields.map((f,i)=>`<label>${f.label||''}<input data-i="${i}" inputmode="numeric" autocomplete="off" aria-label="答案${i+1}">${f.unit||''}</label>`).join('')}</div><div id="fb" class="fb"></div><div class="btns"><button class="main" id="ok">送出 ✔</button></div>`;
+  const ins=[...qa.querySelectorAll('input')];ins[0].focus();
+  const submit=()=>{
+    if(lock)return;
+    const vals=ins.map(i=>norm(i.value));
+    if(vals.some(v=>!/^\d+$/.test(v))){fb('每一格都要填數字喔!','warn');return;}
+    const given=vals.map(Number);
+    const bad=given.map((g,i)=>g!==st.fields[i].ans);
+    if(!bad.some(Boolean)){lock=true;ins.forEach(i=>{i.classList.add('ok');i.disabled=true;});beep(true);fb('✅ 答對了!','ok');
+      if(st.direct){S.orders[S.i].early=true;}
+      setTimeout(nextStage,st.direct?500:750);return;}
+    tries++;beep(false);{const fe=qa.querySelector('.fields');fe.classList.remove('shake');void fe.offsetWidth;fe.classList.add('shake');}ins.forEach((inp,i)=>inp.classList.toggle('bad',bad[i]));
+    if(tries===1){const tag=st.tag?st.tag(given):'';logErr(st,st.fmt(given),tag);}
+    if(st.direct){lock=true;ins.forEach(i=>i.disabled=true);fb('沒關係!我們一步一步來檢查 🔍','info');setTimeout(nextStage,1500);return;}
+    if(tries===1){fb(st.hint?st.hint(given):'再算算看,你可以的!','warn');const f=ins.find((_,i)=>bad[i]);if(f){f.select();f.focus();}}
+    else{lock=true;ins.forEach(i=>i.disabled=true);fb(`正確做法:${st.explain}<br><button class="main" id="go2" style="font-size:18px;padding:8px 18px;margin-top:6px">我知道了 ➜</button>`,'info');$('#go2').onclick=nextStage;$('#go2').focus();}
+  };
+  $('#ok').onclick=submit;
+  ins.forEach((inp,i)=>inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(i<ins.length-1)ins[i+1].focus();else submit();}}));
+}
+function addCoins(g){S.gain+=g;SAVE.coins+=g;save();updHud();}
+function finishOrder(){
+  const o=S.orders[S.i];let gain,mult=1;
+  if(!o.err){S.first++;S.combo++;S.maxCombo=Math.max(S.maxCombo,S.combo);gain=20+Math.min(S.combo-1,8)*2;if(S.combo>=5){gain*=2;mult=2;}}else{S.combo=0;gain=8;}
+  if(o.boss)gain*=2;
+  const dish=pick(DISHES);const isNew=!SAVE.dishes[dish.e];SAVE.dishes[dish.e]=(SAVE.dishes[dish.e]||0)+1;
+  addCoins(gain);
+  const c=$('#cust');c.textContent=o.err?'😅':'😋';c.classList.remove('happy');void c.offsetWidth;c.classList.add('happy');
+  $('#bubble').textContent=pick(o.err?['謝謝老闆~ 慢慢來也很好吃!','下次一定更快!']:['太好吃了!老闆是天才!','再來一份!','這道菜超棒!','我要告訴朋友們!']);
+  const pop=document.createElement('div');pop.className='pop';pop.textContent='+'+gain+' 🪙';document.body.appendChild(pop);setTimeout(()=>pop.remove(),1000);
+  const last=S.i>=S.orders.length-1;const lucky=(S.i+1)%3===0;
+  $('#qa').innerHTML=`<div class="dish">${dish.e}</div><div class="big" style="margin:0">${dish.n}${isNew?'<span class="new">NEW!</span>':''}</div><div class="subq">${o.err?'完成!錯的地方記一記 💪':'🎉 第一次就對!'} +${gain} 🪙${mult>1?' <span class="fevtag">🔥火焰模式 ×2</span>':''}</div>${lucky?'<div class="btns"><button class="gift" id="gift" aria-label="幸運禮物">🎁</button><div class="fb info" id="gfb">幸運禮物!點開看看</div></div>':''}<div class="btns"><button class="main" id="nx">${last?'打烊結帳 🧾':'下一位客人 ➜'}</button></div>`;
+  const g=$('#gift');if(g)g.onclick=()=>{if(g.dataset.o)return;g.dataset.o=1;g.style.animation='none';const r=Math.random();let m;
+    if(r<.55){const v=rnd(15,40);addCoins(v);g.textContent='🪙';m=`+${v} 金幣!`;}
+    else if(r<.85){const d=pick(DISHES);const nw=!SAVE.dishes[d.e];SAVE.dishes[d.e]=(SAVE.dishes[d.e]||0)+1;save();g.textContent=d.e;m=`獲得 ${d.n}!${nw?' 新菜色 NEW!':''}`;}
+    else{addCoins(80);g.textContent='💎';m='大獎!+80 金幣!';}
+    $('#gfb').textContent=m;beep(true);};
+  const nx=$('#nx');nx.focus();nx.onclick=()=>{S.i++;if(S.i>=S.orders.length)finishDay();else playOrder();};
+}
+function finishDay(){
+  const d=S.day,n=S.orders.length;const ratio=S.first/n;const stars=ratio>=.85?3:ratio>=.6?2:1;
+  const prev=SAVE.days[d.id];if(!prev||stars>prev.stars||(stars===prev.stars&&S.first>prev.first))SAVE.days[d.id]={stars,first:S.first,n};save();
+  S.stars=stars;
+  $('#d-stars').textContent=starsStr(stars);
+  $('#d-title').textContent=`Day ${d.id} 打烊!${d.icon}`;
+  $('#d-sum').textContent=`一次就對 ${S.first}/${n} 位客人|本日 +${S.gain} 金幣|最高連對 ${S.maxCombo}`;
+  $('#d-err').innerHTML=S.errors.length?`<h3>這次要再注意的地方</h3><ul class="errlist">${S.errors.slice(0,8).map(e=>`<li>${e.text}:你寫 <b>${e.given}</b>,正確是 <b>${e.correct}</b></li>`).join('')}</ul>`:'<h3>🎉 全部都沒有打錯!</h3>';
+  const rep=buildReport();$('#d-rep').value=rep;$('#d-copyfb').textContent='';
+  show('done');
+  for(let i=0;i<(stars===3?24:10);i++){const e=document.createElement('div');e.className='fall';e.textContent=pick(['🎉','⭐','🪙','🍰','✨']);e.style.left=Math.random()*95+'%';e.style.animationDelay=(Math.random()*1.5)+'s';document.body.appendChild(e);setTimeout(()=>e.remove(),5000);}
+}
+function buildReport(){
+  const d=S.day,n=S.orders.length,mins=Math.max(1,Math.round((Date.now()-S.t0)/60000));
+  const L=[`【算式小餐館 Day${d.id}・${d.name}】軒瑀`,
+    `完成 ${n}/${n} 位客人|一次就對 ${S.first} 位|${S.stars} 顆星|用時約 ${mins} 分|本日金幣 +${S.gain}(現有 ${SAVE.coins})|最高連對 ${S.maxCombo}`];
+  if(S.errors.length){L.push('打錯的地方:');S.errors.slice(0,10).forEach((e,i)=>L.push(`${i+1}. ${e.text}:他寫 ${e.given},正確 ${e.correct}${e.tag?'('+e.tag+')':''}`));
+    if(S.errors.length>10)L.push(`……還有 ${S.errors.length-10} 筆`);
+    const t=Object.entries(S.tags).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}×${v}`).join('、');if(t)L.push('錯誤類型:'+t);}
+  else L.push('沒有打錯的地方 🎉');
+  L.push('(專注度、口說情形請老師自己補充)');
+  return L.join('\n').slice(0,1900);
+}
+// ============ 綁定 ============
+$('#i-go').onclick=startDay;
+$('#i-back').onclick=()=>{renderMap();show('map');};
+$('#b-shop').onclick=()=>{renderShop();show('shop');};
+$('#b-album').onclick=()=>{renderAlbum();show('album');};
+$('#shop-back').onclick=()=>{renderMap();show('map');};
+$('#album-back').onclick=()=>{renderMap();show('map');};
+$('#d-back').onclick=()=>{renderMap();show('map');};
+$('#d-copy').onclick=()=>{const ta=$('#d-rep');
+  let p=null;try{p=navigator.clipboard.writeText(ta.value);}catch(e){}
+  const fallback=()=>{ta.focus();ta.select();$('#d-copyfb').textContent='已幫你選取全部文字,請按 Ctrl+C 複製 📋';};
+  if(p&&p.then)p.then(()=>{$('#d-copyfb').textContent='已複製!貼到 Discord 就可以了 ✅';}).catch(fallback);else fallback();};
+let rs=false;
+$('#reset').onclick=e=>{e.preventDefault();if(!rs){rs=true;e.target.textContent='再按一次才會真的重置';setTimeout(()=>{rs=false;e.target.textContent='重置全部進度';},3000);}else{SAVE={coins:0,days:{},items:{},dishes:{}};save();rs=false;e.target.textContent='重置全部進度';renderMap();}};
+renderMap();
+</script>
+</body>
+</html>
