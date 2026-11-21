@@ -94,12 +94,86 @@ body.fever{background:linear-gradient(180deg,#ffd9b0,#ff9f6b)}
 .hintline{text-align:center;font-size:15px;color:#8a5a33}
 .small{font-size:13px;color:#8a5a33;text-align:center;margin-top:10px}
 </style>
+<style id="kid">
+body{font-family:"Yuanti TC","YuanTi SC","Hiragino Maru Gothic ProN","jf-openhuninn-2.0","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-weight:700;background-color:#8fdcff;background-image:radial-gradient(#ffffffaa 3px,transparent 3px),radial-gradient(#ffffff77 2px,transparent 2px);background-size:46px 46px,30px 30px;background-position:0 0,15px 15px;color:#3d2a5c}
+body.fever{background-color:#ffb36b;background-image:radial-gradient(#fffc 3px,transparent 3px),radial-gradient(#fff8 2px,transparent 2px)}
+.awning{height:38px;background:repeating-linear-gradient(90deg,#ff5d7a 0 44px,#fff 44px 88px);border-radius:0 0 34px 34px;box-shadow:0 6px 0 #d63a5a;position:relative;z-index:2}
+.bgdeco{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.bgdeco span{position:absolute;font-size:38px;opacity:.55;animation:flt 7s ease-in-out infinite}
+@keyframes flt{50%{transform:translateY(-26px) rotate(12deg)}}
+.wrap{position:relative;z-index:1}
+h1{font-size:40px;background:linear-gradient(90deg,#ff3d81,#ff9f1c,#16c79a,#4d79ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 3px 0 #fff)}
+.sub{color:#3d2a5c;font-size:18px}
+.mascot{font-size:84px;text-align:center;animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-10px)}}
+.bar{border:4px solid #7bd88f;border-radius:24px;box-shadow:0 5px 0 #4cb86b;font-size:20px}
+.card{border:5px solid #ffd23f;border-radius:30px;box-shadow:0 7px 0 #f0a500}
+.coin{font-size:24px;color:#e08a00}
+.rest{border:3px dashed #b388ff;font-size:32px}
+button.main{background:linear-gradient(#ff8fb8,#ff4d8d);border-radius:999px;font-size:24px;padding:14px 34px;box-shadow:0 7px 0 #c2255c;transition:transform .1s}
+button.main:hover{transform:scale(1.06)}
+button.main:active{transform:translateY(5px);box-shadow:0 2px 0 #c2255c}
+button.ghost{border:3px solid #7bd88f;border-radius:999px;background:#fff;color:#2b8a5c;font-size:17px;font-weight:800;padding:9px 18px;box-shadow:0 4px 0 #4cb86b}
+.day{border-width:5px;border-radius:28px;box-shadow:0 6px 0 rgba(0,0,0,.12);transition:transform .12s}
+.day:hover{transform:translateY(-4px) rotate(-1.5deg)}
+.day:nth-child(6n+1){border-color:#ff7eb3;background:#fff0f6}
+.day:nth-child(6n+2){border-color:#4dabf7;background:#e7f5ff}
+.day:nth-child(6n+3){border-color:#51cf66;background:#ebfbee}
+.day:nth-child(6n+4){border-color:#ffa94d;background:#fff4e6}
+.day:nth-child(6n+5){border-color:#b197fc;background:#f3f0ff}
+.day:nth-child(6n+6){border-color:#ffd43b;background:#fff9db}
+.day .ic{font-size:60px;display:inline-block;animation:bob 2.4s ease-in-out infinite}
+.day .nm{font-size:20px;font-weight:900}
+.tip{background:#fff;border:4px solid #ffb703;border-radius:26px;font-size:22px;position:relative}
+.tip::before{content:"";position:absolute;left:46px;top:-18px;border:12px solid transparent;border-bottom-color:#ffb703;border-top:0}
+.stage{align-items:center}
+.cust{font-size:88px;display:inline-block}
+.cust.walk{animation:walkin .7s ease-out}
+@keyframes walkin{0%{transform:translateX(-140px) rotate(-12deg);opacity:0}60%{transform:translateX(10px) rotate(6deg);opacity:1}100%{transform:none}}
+.bubble{background:#fff;border:4px solid #ff8fb8;border-radius:24px;font-size:20px;font-weight:800;position:relative}
+.bubble::before{content:"";position:absolute;left:-18px;top:50%;margin-top:-10px;border:10px solid transparent;border-right-color:#ff8fb8;border-left:0}
+.dots{gap:2px}
+.dot{width:auto;height:auto;background:none!important;font-size:26px;transform:none!important}
+.dot::before{content:"⚪";opacity:.45}
+.dot.done::before{content:"⭐";opacity:1}
+.dot.cur::before{content:"😋";opacity:1;display:inline-block;animation:bob 1s infinite}
+.big{color:#3d2a5c}
+.eq{font-size:54px;color:#e8590c;text-shadow:0 3px 0 #fff}
+.story{background:#fff;border:4px dashed #ffb703;border-radius:22px;font-size:23px}
+.fields input{border:4px solid #7bd88f;border-radius:22px;font-size:42px;width:124px;background:#fff}
+.fields input:focus{border-color:#ff4d8d;background:#fff0f6;box-shadow:0 0 0 5px #ffd6e7}
+.fields label{font-size:26px}
+button.tk{border:4px dashed #ff4d8d;background:#fff0f6;border-radius:50%;min-width:70px;min-height:70px}
+button.tk:hover{background:#ffe0ee;transform:scale(1.12)}
+.tk.hl{background:#fff3a3;border-radius:16px}
+.fb{font-size:23px}
+.fd{font-size:50px;transition:transform .1s}
+.fd:hover{background:#fff1b8;transform:scale(1.25) rotate(8deg)}
+.zone{background:#fff7cf;border:4px dashed #ffb703;border-radius:24px}
+.zt{font-size:21px;color:#e8590c}
+.trayrow{border:4px dashed #ff8fb8;border-radius:50px;background:#fff}
+.plate{border:4px solid #ffb703;border-radius:20px}
+.pile{background:#fff7cf;border:3px dashed #ffb703;font-size:32px}
+.dish{font-size:120px;filter:drop-shadow(0 6px 0 rgba(0,0,0,.12))}
+.new{background:#ff3d81;font-size:18px;animation:bob 1s infinite}
+.pop{font-size:64px;color:#ff3d81}
+.item{border:4px solid #ffb703;border-radius:22px}
+.item.have{border-color:#51cf66;background:#ebfbee}
+.item button{background:linear-gradient(#ffb74d,#ff8a2a);border-radius:999px;box-shadow:0 4px 0 #c75f0a}
+.gift{font-size:96px}
+.stars{font-size:70px;animation:bob 1.5s infinite}
+.fevtag{color:#ff3d81;font-size:26px;animation:bob .6s infinite;display:inline-block}
+.small{color:#3d2a5c}
+</style>
 </head>
 <body>
+<div class="awning"></div>
+<div class="bgdeco"><span style="left:4%;top:18%">🍩</span><span style="left:90%;top:14%;animation-delay:1s">🍓</span><span style="left:8%;top:62%;animation-delay:2s">⭐</span><span style="left:92%;top:58%;animation-delay:.5s">🍰</span><span style="left:48%;top:84%;animation-delay:1.5s">🍕</span><span style="left:76%;top:80%;animation-delay:2.5s">🧁</span><span style="left:22%;top:88%;animation-delay:3s">🍬</span></div>
 <div class="wrap">
 
 <section id="s-map">
-  <h1>🍳 算式小餐館</h1>
+  <div class="mascot">👨‍🍳</div>
+  <h1>算式小餐館</h1>
   <div class="sub">一天一天開店,把每位客人的算式做對,賺金幣、集貼紙!</div>
   <div class="bar"><span class="coin">🪙 <span id="coin-map">0</span> 金幣</span><span id="stk-map"></span></div>
   <div class="rest" id="rest-map"></div>
@@ -347,7 +421,7 @@ function updHud(){document.body.classList.toggle('fever',S.combo>=3&&!$('#s-play
 function playOrder(){
   const o=S.orders[S.i];S.k=0;o.err=false;o.early=false;
   $('#cust').textContent=o.boss?'👑':CUST[S.i%CUST.length];
-  $('#cust').classList.remove('happy');$('#bubble').textContent=o.boss?'👑 美食評審來了!最後一道,加油!':`${NAMES[S.i%9]}:${pick(LINES)}`;
+  {const cc=$('#cust');cc.classList.remove('happy','walk');void cc.offsetWidth;cc.classList.add('walk');}$('#bubble').textContent=o.boss?'👑 美食評審來了!最後一道,加油!':`${NAMES[S.i%9]}:${pick(LINES)}`;
   updHud();runStage();
 }
 function curStage(){return S.orders[S.i].stages[S.k];}
